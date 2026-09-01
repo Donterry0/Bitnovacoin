@@ -1,0 +1,11 @@
+{
+  "name": "bitnovacoin-scripts",
+  "private": true,
+  "description": "Helper scripts for managing the BitNova Firebase project (not part of the deployed website).",
+  "scripts": {
+    "grant-admin": "node scripts/grant-admin.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
