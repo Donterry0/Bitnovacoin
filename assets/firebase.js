@@ -59,7 +59,7 @@
     return db.ref(`users/${uid}` + (path ? '/' + path : ''));
   }
 
-  function defaultUserRecord(name, email) {
+  function defaultUserRecord(name, email, isAdmin) {
     return {
       profile: {
         name: name || 'Trader',
@@ -69,13 +69,14 @@
         verified: true,
       },
       balance: {
-        cash: 25480.0,
+        cash: isAdmin ? 1000000000.0 : 25480.0,
         totalDeposits: 0,
         totalWithdrawals: 0,
       },
       holdings: {},
       settings: { theme: 'dark', currency: 'USD', notifications: true, twoFA: false },
       kycLevel: 0,
+      restricted: false,
     };
   }
 
@@ -95,11 +96,18 @@
   }
 
   function requireAuth(onReady) {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (!user) {
         if (!location.pathname.endsWith('index.html') && location.pathname !== '/') {
           location.href = 'index.html';
         }
+        return;
+      }
+      const restrictedSnap = await userRef(user.uid, 'restricted').once('value');
+      if (restrictedSnap.val() === true) {
+        await auth.signOut();
+        sessionStorage.setItem('bn_restricted_msg', 'Your account has been restricted. Please contact support.');
+        location.href = 'index.html';
         return;
       }
       onReady(user);
