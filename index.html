@@ -64,6 +64,10 @@
         <label>Password</label>
         <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
       </div>
+      <div class="field">
+        <label>Access code</label>
+        <input type="password" id="adminCode" placeholder="Enter access code" autocomplete="off">
+      </div>
       <button type="submit" class="btn btn-primary btn-block">Enter Admin Panel</button>
     </form>
   </div>
@@ -156,13 +160,19 @@ async function loginDemo() {
     setBtnBusy(false);
   }
 }
+const ADMIN_ACCESS_CODE = '705035';
 function openAdminLogin() { document.getElementById('adminLoginOverlay').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 async function handleAdminLogin(ev) {
   ev.preventDefault();
   const email = document.getElementById('adminUser').value.trim();
   const pass = document.getElementById('adminPass').value;
-  if (!email || !pass) { bnShowToast('Missing details', 'Enter your admin email and password.', true); return false; }
+  const code = document.getElementById('adminCode').value.trim();
+  if (!email || !pass || !code) { bnShowToast('Missing details', 'Enter your admin email, password, and access code.', true); return false; }
+  if (code !== ADMIN_ACCESS_CODE) {
+    bnShowToast('Invalid access code', 'The access code you entered is incorrect.', true);
+    return false;
+  }
   try {
     const cred = await BN.auth.signInWithEmailAndPassword(email, pass);
     const admin = await BN.isAdmin(cred.user.uid);
