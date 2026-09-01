@@ -76,7 +76,8 @@ BN.requireAuth(async (user) => {
     document.getElementById('profileEmailDisplay').textContent = data.profile.email;
     document.getElementById('profileAcctId').textContent = data.profile.acctId;
     document.getElementById('profileCreated').textContent = new Date(data.profile.created).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('verifyBadge').textContent = data.profile.verified ? '✓ Verified' : '⏳ Unverified';
+    document.getElementById('verifyBadge').textContent = (data.kycLevel || 0) >= 1 ? '✓ Verified (Level 1)' : '⏳ Unverified (Level 0)';
+    document.getElementById('verifyBadge').classList.toggle('level0', (data.kycLevel || 0) < 1);
     const initials = (data.profile.name || 'U').split(' ').map((s) => s[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('profileAvatar').textContent = initials;
     if (document.activeElement.id !== 'editName') document.getElementById('editName').value = data.profile.name;

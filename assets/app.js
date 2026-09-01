@@ -13,6 +13,20 @@ const BN_COINS = [
   { id: 'USDT', name: 'Tether', price: 1.0, change24h: 0.01, color: '#26a17b' },
 ];
 
+const BN_COIN_NETWORKS = {
+  BTC: 'Bitcoin Network',
+  ETH: 'ERC-20 (Ethereum)',
+  SOL: 'Solana Network',
+  BNB: 'BEP-20 (BNB Smart Chain)',
+  XRP: 'XRP Ledger',
+  ADA: 'Cardano Network',
+  DOGE: 'Dogecoin Network',
+  USDT: 'ERC-20 (Ethereum)',
+};
+function bnCoinNetwork(coinId) {
+  return BN_COIN_NETWORKS[coinId] || `${coinId} Network`;
+}
+
 const BN_NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: '🏠', href: 'dashboard.html' },
   { id: 'markets', label: 'Markets', icon: '📈', href: 'markets.html' },
@@ -45,10 +59,36 @@ function bnEmptyRow(cols) {
 }
 
 /* ---------------------------- Navigation shell ---------------------------- */
+const BN_SIDEBAR_STATE_KEY = 'bitnova_sidebar_expanded';
+function bnSidebarDefaultExpanded() {
+  return window.matchMedia('(min-width: 901px)').matches;
+}
+function bnSetSidebarExpanded(toggle, sidebarNav, expanded) {
+  sidebarNav.classList.toggle('nav-list-collapsed', !expanded);
+  toggle.classList.toggle('menu-expanded', expanded);
+  toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+}
 function bnBuildNav(activeView) {
   const sidebarNav = document.getElementById('sidebarNav');
   const bottomList = document.getElementById('bottomNavList');
   if (sidebarNav) {
+    let toggle = document.getElementById('sidebarMenuToggle');
+    if (!toggle) {
+      toggle = document.createElement('div');
+      toggle.className = 'nav-item nav-menu-toggle';
+      toggle.id = 'sidebarMenuToggle';
+      toggle.setAttribute('role', 'button');
+      toggle.innerHTML = '<span class="ic">☰</span> Menu<span class="menu-chevron">▾</span>';
+      sidebarNav.parentNode.insertBefore(toggle, sidebarNav);
+      toggle.addEventListener('click', () => {
+        const expanded = !toggle.classList.contains('menu-expanded');
+        bnSetSidebarExpanded(toggle, sidebarNav, expanded);
+        localStorage.setItem(BN_SIDEBAR_STATE_KEY, expanded ? '1' : '0');
+      });
+      const stored = localStorage.getItem(BN_SIDEBAR_STATE_KEY);
+      const expanded = stored !== null ? stored === '1' : bnSidebarDefaultExpanded();
+      bnSetSidebarExpanded(toggle, sidebarNav, expanded);
+    }
     sidebarNav.innerHTML = BN_NAV_ITEMS.map(
       (n) => `<li class="nav-item${n.id === activeView ? ' active' : ''}" onclick="location.href='${n.href}'"><span class="ic">${n.icon}</span> ${n.label}</li>`
     ).join('');
@@ -89,6 +129,32 @@ function bnShowToast(title, body, isErr) {
     t.style.transition = 'opacity .3s';
     setTimeout(() => t.remove(), 300);
   }, 3500);
+}
+
+/* ---------------------------- KYC verification gate ---------------------------- */
+function bnShowKycModal() {
+  let overlay = document.getElementById('kycModal');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'kycModal';
+    overlay.innerHTML =
+      '<div class="modal">' +
+      '<div class="modal-head"><h2>Verification Required</h2><button type="button" id="kycModalClose">✕</button></div>' +
+      '<p class="help-text">Please contact support to complete verification before continuing.</p>' +
+      '<button type="button" class="btn btn-primary btn-block" id="kycModalOk">Okay</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    const close = () => overlay.classList.remove('open');
+    overlay.querySelector('#kycModalClose').addEventListener('click', close);
+    overlay.querySelector('#kycModalOk').addEventListener('click', close);
+  }
+  overlay.classList.add('open');
+}
+function bnRequireKyc(kycLevel) {
+  if ((kycLevel || 0) >= 1) return true;
+  bnShowKycModal();
+  return false;
 }
 
 /* ---------------------------- Notifications dropdown ---------------------------- */

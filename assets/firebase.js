@@ -24,6 +24,37 @@
     return `${prefix}-${ts}${rand}`;
   }
 
+  const BN_ADDR_HEX = '0123456789abcdef';
+  const BN_ADDR_BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const BN_ADDR_BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz';
+  function genRandChars(len, charset) {
+    let out = '';
+    for (let i = 0; i < len; i++) out += charset[Math.floor(Math.random() * charset.length)];
+    return out;
+  }
+  // Generates a mock, plausible-looking wallet address for the given coin id.
+  // These are NOT real deposit addresses - this is a demo app with no custody.
+  function genAddress(coinId) {
+    switch (coinId) {
+      case 'BTC':
+        return 'bc1q' + genRandChars(38, BN_ADDR_BASE36);
+      case 'ETH':
+      case 'BNB':
+      case 'USDT':
+        return '0x' + genRandChars(40, BN_ADDR_HEX);
+      case 'SOL':
+        return genRandChars(44, BN_ADDR_BASE58);
+      case 'XRP':
+        return 'r' + genRandChars(33, BN_ADDR_BASE58);
+      case 'ADA':
+        return 'addr1' + genRandChars(53, BN_ADDR_BASE36);
+      case 'DOGE':
+        return 'D' + genRandChars(33, BN_ADDR_BASE58);
+      default:
+        return genId(coinId || 'ADDR');
+    }
+  }
+
   function userRef(uid, path) {
     return db.ref(`users/${uid}` + (path ? '/' + path : ''));
   }
@@ -44,6 +75,7 @@
       },
       holdings: {},
       settings: { theme: 'dark', currency: 'USD', notifications: true, twoFA: false },
+      kycLevel: 0,
     };
   }
 
@@ -78,6 +110,7 @@
     auth,
     db,
     genId,
+    genAddress,
     userRef,
     defaultUserRecord,
     ensureUserRecord,

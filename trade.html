@@ -142,6 +142,7 @@ function updateOrderSummary() {
 async function submitOrder(ev) {
   ev.preventDefault();
   if (!bnData) return false;
+  if (!bnRequireKyc(bnData.kycLevel)) return false;
   const amountInput = document.getElementById('orderAmount');
   const fieldWrap = amountInput.closest('.field');
   fieldWrap.classList.remove('invalid');
