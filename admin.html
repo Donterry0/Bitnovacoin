@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Demo Admin Panel — BitNova</title>
+<title>Admin Panel — BitNova</title>
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -11,25 +11,24 @@
   <aside class="sidebar">
     <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
     <ul class="nav-list">
-      <li class="nav-item active"><span class="ic">🛡</span> Admin Panel<span class="admin-badge">DEMO</span></li>
+      <li class="nav-item active"><span class="ic">🛡</span> Admin Panel</li>
     </ul>
     <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
   </aside>
   <div class="main-col">
     <div class="topbar">
-      <h1>Demo Admin Panel</h1>
+      <h1>Admin Panel</h1>
       <div class="topbar-right"><div class="avatar">AD</div></div>
     </div>
     <div class="content">
       <section class="view active">
-        <div class="demo-banner">🛡️ <div><strong>Demo Admin Panel:</strong> For demonstration only. No real financial administration is performed.</div></div>
         <div class="grid grid-4">
-          <div class="card"><h3>Total Demo Users</h3><div class="big" id="a-users">0</div></div>
-          <div class="card"><h3>Total Demo Deposits</h3><div class="big" id="a-deposits">$0.00</div></div>
-          <div class="card"><h3>Total Demo Withdrawals</h3><div class="big" id="a-withdrawals">$0.00</div></div>
-          <div class="card"><h3>Demo Trading Volume</h3><div class="big" id="a-volume">$0.00</div></div>
+          <div class="card"><h3>Total Users</h3><div class="big" id="a-users">0</div></div>
+          <div class="card"><h3>Total Deposits</h3><div class="big" id="a-deposits">$0.00</div></div>
+          <div class="card"><h3>Total Withdrawals</h3><div class="big" id="a-withdrawals">$0.00</div></div>
+          <div class="card"><h3>Trading Volume</h3><div class="big" id="a-volume">$0.00</div></div>
         </div>
-        <h2 class="section-title">Demo Users</h2>
+        <h2 class="section-title">Users</h2>
         <div class="table-wrap">
           <table><thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th style="text-align:right;">Adjust Balance</th></tr></thead><tbody id="adminUsersBody"></tbody></table>
         </div>
@@ -55,7 +54,7 @@ BN.auth.onAuthStateChanged(async (user) => {
   if (!user) { location.href = 'index.html'; return; }
   const admin = await BN.isAdmin(user.uid);
   if (!admin) {
-    bnShowToast('Access denied', 'This account is not a demo admin.', true);
+    bnShowToast('Access denied', 'This account is not an admin.', true);
     setTimeout(() => (location.href = 'dashboard.html'), 1200);
     return;
   }
@@ -115,7 +114,7 @@ document.getElementById('adminTxBody').addEventListener('change', (e) => {
 });
 
 async function adminAdjustBalance(uid) {
-  const amountStr = prompt("Enter amount to ADD to this demo user's balance (use a negative number to subtract):", '0');
+  const amountStr = prompt("Enter amount to ADD to this user's balance (use a negative number to subtract):", '0');
   if (amountStr === null) return;
   const amount = parseFloat(amountStr);
   if (isNaN(amount)) { bnShowToast('Invalid amount', 'Please enter a valid number.', true); return; }
@@ -123,7 +122,7 @@ async function adminAdjustBalance(uid) {
   const snap = await ref.once('value');
   const current = snap.val() || 0;
   await ref.set(current + amount);
-  BN.userRef(uid, 'notifications').push({ title: 'Security notification', body: `An admin adjusted your demo balance by ${bnFmtUSD(amount)}.`, time: Date.now(), read: false });
+  BN.userRef(uid, 'notifications').push({ title: 'Security notification', body: `An admin adjusted your balance by ${bnFmtUSD(amount)}.`, time: Date.now(), read: false });
   bnShowToast('Balance adjusted', `${amount >= 0 ? '+' : ''}${bnFmtUSD(amount)}`);
 }
 async function adminChangeStatus(uid, txKey, newStatus) {

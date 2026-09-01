@@ -33,7 +33,7 @@
             <div>
               <div style="font-size:19px;font-weight:800;" id="profileNameDisplay">User</div>
               <div style="color:var(--text-faint);font-size:13px;" id="profileEmailDisplay">user@example.com</div>
-              <div style="margin-top:6px;"><span class="verify-badge" id="verifyBadge">✓ Demo Verified</span></div>
+              <div style="margin-top:6px;"><span class="verify-badge" id="verifyBadge">✓ Verified</span></div>
             </div>
           </div>
           <div class="grid grid-2" style="margin-bottom:18px;">
@@ -76,7 +76,7 @@ BN.requireAuth(async (user) => {
     document.getElementById('profileEmailDisplay').textContent = data.profile.email;
     document.getElementById('profileAcctId').textContent = data.profile.acctId;
     document.getElementById('profileCreated').textContent = new Date(data.profile.created).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('verifyBadge').textContent = data.profile.verified ? '✓ Demo Verified' : '⏳ Unverified (Demo)';
+    document.getElementById('verifyBadge').textContent = data.profile.verified ? '✓ Verified' : '⏳ Unverified';
     const initials = (data.profile.name || 'U').split(' ').map((s) => s[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('profileAvatar').textContent = initials;
     if (document.activeElement.id !== 'editName') document.getElementById('editName').value = data.profile.name;
@@ -89,7 +89,7 @@ async function saveProfile(ev) {
   const email = document.getElementById('editEmail').value.trim();
   if (!name || !isValidEmail(email)) { bnShowToast('Invalid details', 'Please enter a valid name and email.', true); return false; }
   await BN.userRef(bnUid, 'profile').update({ name, email });
-  bnPushNotification(bnUid, 'Profile updated', 'Your demo profile details were saved.', true);
+  bnPushNotification(bnUid, 'Profile updated', 'Your profile details were saved.', true);
   bnShowToast('Profile saved', 'Your changes have been saved.');
   return false;
 }

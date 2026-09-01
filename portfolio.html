@@ -100,7 +100,7 @@ function renderPortfolio(data) {
   });
   document.getElementById('p-pl').textContent = (pl >= 0 ? '+' : '') + bnFmtUSD(pl);
   document.getElementById('p-pl').style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('holdingsList').innerHTML = holdingsHtml.join('') || '<div style="text-align:center;color:var(--text-faint);padding:20px;">No crypto holdings yet — try a demo trade!</div>';
+  document.getElementById('holdingsList').innerHTML = holdingsHtml.join('') || '<div style="text-align:center;color:var(--text-faint);padding:20px;">No crypto holdings yet — place a trade to get started!</div>';
 
   const totalAlloc = allocSegs.reduce((s, a) => s + a.value, 0) || 1;
   document.getElementById('allocBar').innerHTML = allocSegs.map((a) => `<div class="alloc-seg" style="width:${((a.value / totalAlloc) * 100).toFixed(2)}%;background:${a.coin.color};"></div>`).join('');
