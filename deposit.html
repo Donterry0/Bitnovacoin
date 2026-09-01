@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Deposit — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Deposit</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="card" style="max-width:460px;">
+          <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Deposit Funds</h3>
+          <div class="notice">Demo transaction — no real funds are transferred.</div>
+          <form onsubmit="return submitDeposit(event)">
+            <div class="field">
+              <label>Amount</label>
+              <input type="number" id="depAmount" min="0" step="0.01" placeholder="0.00">
+              <small class="err">Enter an amount greater than 0.</small>
+            </div>
+            <div class="field">
+              <label>Currency</label>
+              <select id="depCurrency"><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
+            </div>
+            <div class="field">
+              <label>Payment method</label>
+              <select id="depMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto</option></select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit Demo Deposit</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('deposit');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+let bnUid = null, bnData = null;
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    bnData = snap.val();
+    if (!bnData) return;
+    bnApplyTheme(bnData.settings && bnData.settings.theme);
+    bnSetAvatarInitials(bnData.profile.name);
+  });
+});
+async function submitDeposit(ev) {
+  ev.preventDefault();
+  if (!bnData) return false;
+  const field = document.getElementById('depAmount').closest('.field');
+  field.classList.remove('invalid');
+  const amount = parseFloat(document.getElementById('depAmount').value);
+  const currency = document.getElementById('depCurrency').value;
+  const method = document.getElementById('depMethod').value;
+  if (!amount || amount <= 0) { field.classList.add('invalid'); return false; }
+  const ref = BN.genId('DEP');
+  const updates = {};
+  updates[`users/${bnUid}/balance/cash`] = bnData.balance.cash + amount;
+  updates[`users/${bnUid}/balance/totalDeposits`] = bnData.balance.totalDeposits + amount;
+  updates[`users/${bnUid}/transactions/${ref}`] = { txId: ref, date: Date.now(), type: 'Deposit', asset: currency, amount, status: 'Completed', method };
+  await BN.db.ref().update(updates);
+  document.getElementById('depAmount').value = '';
+  bnPushNotification(bnUid, 'Deposit received', `Demo deposit of ${bnFmtUSD(amount)} via ${method} (Ref: ${ref}).`, bnData.settings.notifications);
+  bnShowToast('Deposit successful', `Reference ${ref} — ${bnFmtUSD(amount)} added to your demo balance.`);
+  return false;
+}
+</script>
+</body>
+</html>

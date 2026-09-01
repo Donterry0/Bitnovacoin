@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Transactions — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Transactions</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="filters">
+          <select id="filterType"><option value="">All Types</option><option>Deposit</option><option>Withdrawal</option><option>Buy</option><option>Sell</option></select>
+          <select id="filterStatus"><option value="">All Statuses</option><option>Completed</option><option>Pending</option><option>Failed</option></select>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Transaction ID</th><th>Date</th><th>Type</th><th>Asset</th><th>Amount</th><th>Status</th></tr></thead><tbody id="txBody"></tbody></table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('transactions');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+let allTx = [];
+BN.requireAuth(async (user) => {
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(user.uid);
+  BN.userRef(user.uid).on('value', (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    bnApplyTheme(data.settings && data.settings.theme);
+    bnSetAvatarInitials(data.profile.name);
+    allTx = Object.entries(data.transactions || {}).map(([id, t]) => ({ id, ...t })).sort((a, b) => b.date - a.date);
+    renderTransactions();
+  });
+});
+document.getElementById('filterType').addEventListener('change', renderTransactions);
+document.getElementById('filterStatus').addEventListener('change', renderTransactions);
+function renderTransactions() {
+  const type = document.getElementById('filterType').value;
+  const status = document.getElementById('filterStatus').value;
+  const list = allTx.filter((t) => (!type || t.type === type) && (!status || t.status === status));
+  document.getElementById('txBody').innerHTML = list.map(txRowHtml).join('') || bnEmptyRow(6);
+}
+function txRowHtml(t) {
+  const signed = t.type === 'Withdrawal' || t.type === 'Buy' ? '-' : t.type === 'Deposit' || t.type === 'Sell' ? '+' : '';
+  return `<tr><td>${bnEscapeHtml(t.txId || t.id)}</td><td>${bnFmtDate(t.date)}</td><td>${bnEscapeHtml(t.type)}</td><td>${bnEscapeHtml(t.asset)}</td><td>${signed}${bnFmtUSD(t.amount)}</td><td><span class="status-tag status-${bnEscapeHtml(t.status)}">${bnEscapeHtml(t.status)}</span></td></tr>`;
+}
+</script>
+</body>
+</html>

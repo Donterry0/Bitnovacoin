@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Settings — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Settings</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="card">
+          <div class="setting-row">
+            <div><div class="label">Dark Mode</div><div class="desc">Toggle between dark and light theme</div></div>
+            <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleTheme()"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Display Currency</div><div class="desc">Used across the dashboard</div></div>
+            <select id="currencyPref" onchange="saveSettingsField('currency', this.value)"><option>USD</option><option>EUR</option><option>GBP</option></select>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Notification Preferences</div><div class="desc">Receive in-app notifications for demo activity</div></div>
+            <label class="switch"><input type="checkbox" id="notifToggle" onchange="saveSettingsField('notifications', this.checked)"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Two-Factor Security (Demo)</div><div class="desc">Simulated extra login verification</div></div>
+            <label class="switch"><input type="checkbox" id="twoFAToggle" onchange="saveSettingsField('twoFA', this.checked)"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Log Out</div><div class="desc">End your current demo session</div></div>
+            <button class="btn btn-danger btn-sm" onclick="bnLogout()">Log Out</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('settings');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+let bnUid = null;
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    bnApplyTheme(data.settings && data.settings.theme);
+    bnSetAvatarInitials(data.profile.name);
+    document.getElementById('darkModeToggle').checked = (data.settings.theme || 'dark') === 'dark';
+    document.getElementById('notifToggle').checked = !!data.settings.notifications;
+    document.getElementById('twoFAToggle').checked = !!data.settings.twoFA;
+    document.getElementById('currencyPref').value = data.settings.currency || 'USD';
+  });
+});
+function toggleTheme() {
+  const dark = document.getElementById('darkModeToggle').checked;
+  const theme = dark ? 'dark' : 'light';
+  bnApplyTheme(theme);
+  saveSettingsField('theme', theme);
+}
+function saveSettingsField(key, value) {
+  if (!bnUid) return;
+  BN.userRef(bnUid, `settings/${key}`).set(value);
+  bnShowToast('Settings saved', 'Your preference has been updated.');
+}
+</script>
+</body>
+</html>

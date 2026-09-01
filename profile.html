@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Profile — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Profile</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="card">
+          <div class="profile-head">
+            <div class="avatar-lg" id="profileAvatar">U</div>
+            <div>
+              <div style="font-size:19px;font-weight:800;" id="profileNameDisplay">User</div>
+              <div style="color:var(--text-faint);font-size:13px;" id="profileEmailDisplay">user@example.com</div>
+              <div style="margin-top:6px;"><span class="verify-badge" id="verifyBadge">✓ Demo Verified</span></div>
+            </div>
+          </div>
+          <div class="grid grid-2" style="margin-bottom:18px;">
+            <div><div class="sub">Account ID</div><div style="font-weight:700;" id="profileAcctId">—</div></div>
+            <div><div class="sub">Account Created</div><div style="font-weight:700;" id="profileCreated">—</div></div>
+          </div>
+          <form onsubmit="return saveProfile(event)">
+            <div class="field"><label>Full name</label><input type="text" id="editName"></div>
+            <div class="field"><label>Email</label><input type="email" id="editEmail"></div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('profile');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+let bnUid = null;
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    bnApplyTheme(data.settings && data.settings.theme);
+    bnSetAvatarInitials(data.profile.name);
+    document.getElementById('profileNameDisplay').textContent = data.profile.name;
+    document.getElementById('profileEmailDisplay').textContent = data.profile.email;
+    document.getElementById('profileAcctId').textContent = data.profile.acctId;
+    document.getElementById('profileCreated').textContent = new Date(data.profile.created).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('verifyBadge').textContent = data.profile.verified ? '✓ Demo Verified' : '⏳ Unverified (Demo)';
+    const initials = (data.profile.name || 'U').split(' ').map((s) => s[0]).join('').substring(0, 2).toUpperCase();
+    document.getElementById('profileAvatar').textContent = initials;
+    if (document.activeElement.id !== 'editName') document.getElementById('editName').value = data.profile.name;
+    if (document.activeElement.id !== 'editEmail') document.getElementById('editEmail').value = data.profile.email;
+  });
+});
+async function saveProfile(ev) {
+  ev.preventDefault();
+  const name = document.getElementById('editName').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+  if (!name || !isValidEmail(email)) { bnShowToast('Invalid details', 'Please enter a valid name and email.', true); return false; }
+  await BN.userRef(bnUid, 'profile').update({ name, email });
+  bnPushNotification(bnUid, 'Profile updated', 'Your demo profile details were saved.', true);
+  bnShowToast('Profile saved', 'Your changes have been saved.');
+  return false;
+}
+</script>
+</body>
+</html>

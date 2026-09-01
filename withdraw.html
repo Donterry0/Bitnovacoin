@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Withdraw — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Withdraw</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="card" style="max-width:460px;">
+          <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Withdraw Funds</h3>
+          <div class="notice">Demo withdrawal — no real funds are transferred.</div>
+          <form onsubmit="return submitWithdrawal(event)">
+            <div class="field">
+              <label>Amount <span class="help-text" id="wAvailHint"></span></label>
+              <input type="number" id="wdAmount" min="0" step="0.01" placeholder="0.00">
+              <small class="err" id="wdAmountErr">Enter a valid amount within your available balance.</small>
+            </div>
+            <div class="field">
+              <label>Currency</label>
+              <select id="wdCurrency"><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
+            </div>
+            <div class="field">
+              <label>Withdrawal method</label>
+              <select id="wdMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto Wallet</option></select>
+            </div>
+            <div class="field">
+              <label>Destination / account</label>
+              <input type="text" id="wdDestination" placeholder="Account number or wallet address (demo)">
+              <small class="err">Destination is required.</small>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit Demo Withdrawal</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('withdraw');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+let bnUid = null, bnData = null;
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    bnData = snap.val();
+    if (!bnData) return;
+    bnApplyTheme(bnData.settings && bnData.settings.theme);
+    bnSetAvatarInitials(bnData.profile.name);
+    document.getElementById('wAvailHint').textContent = `(Available: ${bnFmtUSD(bnData.balance.cash)})`;
+  });
+});
+async function submitWithdrawal(ev) {
+  ev.preventDefault();
+  if (!bnData) return false;
+  const amtField = document.getElementById('wdAmount').closest('.field');
+  const destField = document.getElementById('wdDestination').closest('.field');
+  amtField.classList.remove('invalid'); destField.classList.remove('invalid');
+  const amount = parseFloat(document.getElementById('wdAmount').value);
+  const currency = document.getElementById('wdCurrency').value;
+  const method = document.getElementById('wdMethod').value;
+  const destination = document.getElementById('wdDestination').value.trim();
+  let valid = true;
+  if (!amount || amount <= 0) { amtField.classList.add('invalid'); document.getElementById('wdAmountErr').textContent = 'Enter an amount greater than 0.'; valid = false; }
+  else if (amount > bnData.balance.cash) { amtField.classList.add('invalid'); document.getElementById('wdAmountErr').textContent = 'Amount exceeds your available demo balance.'; valid = false; }
+  if (!destination) { destField.classList.add('invalid'); valid = false; }
+  if (!valid) return false;
+
+  const txId = BN.genId('WD');
+  const updates = {};
+  updates[`users/${bnUid}/balance/cash`] = bnData.balance.cash - amount;
+  updates[`users/${bnUid}/balance/totalWithdrawals`] = bnData.balance.totalWithdrawals + amount;
+  updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Withdrawal', asset: currency, amount, status: 'Pending', method, destination };
+  await BN.db.ref().update(updates);
+  document.getElementById('wdAmount').value = '';
+  document.getElementById('wdDestination').value = '';
+  bnPushNotification(bnUid, 'Withdrawal submitted', `Demo withdrawal of ${bnFmtUSD(amount)} (ID: ${txId}) is pending.`, bnData.settings.notifications);
+  bnShowToast('Withdrawal submitted', `Confirmation ID ${txId} — status: Pending.`);
+  return false;
+}
+</script>
+</body>
+</html>

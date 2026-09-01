@@ -5,343 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BitNova — Demo Crypto Broker Dashboard</title>
 <meta name="description" content="BitNova is a demo cryptocurrency broker dashboard. All balances, trades, deposits and withdrawals are simulated — no real funds are ever transferred.">
-<style>
-  :root{
-    --bg:#0b0e14;
-    --bg-elev:#121620;
-    --card:#161b28;
-    --card-2:#1b2233;
-    --border:#242c3d;
-    --text:#e8ecf5;
-    --text-dim:#8b93a7;
-    --text-faint:#5b6478;
-    --brand:#5b8cff;
-    --brand-2:#8a5bff;
-    --brand-grad:linear-gradient(135deg,#5b8cff,#8a5bff);
-    --green:#1fd28a;
-    --red:#ff5c6c;
-    --amber:#ffb84d;
-    --radius:16px;
-    --radius-sm:10px;
-    --shadow:0 10px 30px rgba(0,0,0,0.35);
-    --sidebar-w:230px;
-    --transition:.18s ease;
-  }
-  :root[data-theme="light"]{
-    --bg:#f4f6fb;
-    --bg-elev:#ffffff;
-    --card:#ffffff;
-    --card-2:#f0f3fa;
-    --border:#e3e7f0;
-    --text:#141826;
-    --text-dim:#5b6478;
-    --text-faint:#8b93a7;
-    --shadow:0 10px 30px rgba(20,24,38,0.08);
-  }
-  *{box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    transition:background var(--transition),color var(--transition);
-  }
-  a{color:inherit;}
-  button{font-family:inherit;}
-  input,select,button{outline:none;}
-  ::-webkit-scrollbar{width:8px;height:8px;}
-  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
-
-  .hidden{display:none !important;}
-  .brand{
-    display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:.2px;
-  }
-  .brand .logo{
-    width:34px;height:34px;border-radius:10px;background:var(--brand-grad);
-    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;
-    box-shadow:0 4px 14px rgba(91,140,255,.45);
-  }
-  .brand span.name-b{color:var(--brand);}
-
-  /* ---------- Buttons & inputs ---------- */
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:12px 18px;border-radius:12px;border:1px solid transparent;cursor:pointer;
-    font-size:14px;font-weight:600;transition:transform var(--transition),filter var(--transition),background var(--transition);
-    white-space:nowrap;
-  }
-  .btn:active{transform:scale(.97);}
-  .btn-primary{background:var(--brand-grad);color:#fff;}
-  .btn-primary:hover{filter:brightness(1.08);}
-  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text);}
-  .btn-ghost:hover{background:var(--card-2);}
-  .btn-buy{background:rgba(31,210,138,.15);color:var(--green);border-color:rgba(31,210,138,.3);}
-  .btn-buy:hover{background:rgba(31,210,138,.28);}
-  .btn-sell{background:rgba(255,92,108,.15);color:var(--red);border-color:rgba(255,92,108,.3);}
-  .btn-sell:hover{background:rgba(255,92,108,.28);}
-  .btn-block{width:100%;}
-  .btn-sm{padding:8px 12px;font-size:13px;border-radius:9px;}
-  .btn-danger{background:rgba(255,92,108,.15);color:var(--red);border-color:rgba(255,92,108,.3);}
-  .btn[disabled]{opacity:.5;cursor:not-allowed;}
-
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
-  .field input,.field select{
-    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);
-    background:var(--card-2);color:var(--text);font-size:14px;transition:border-color var(--transition);
-  }
-  .field input:focus,.field select:focus{border-color:var(--brand);}
-  .field small.err{color:var(--red);display:none;font-size:12px;margin-top:4px;}
-  .field.invalid input,.field.invalid select{border-color:var(--red);}
-  .field.invalid small.err{display:block;}
-  .help-text{font-size:12px;color:var(--text-faint);margin-top:6px;}
-  .notice{
-    background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.35);color:var(--amber);
-    padding:10px 14px;border-radius:10px;font-size:12.5px;margin:12px 0;font-weight:600;
-  }
-
-  /* ---------- Login screen ---------- */
-  #loginScreen{
-    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-    background:radial-gradient(circle at 20% 20%,#161d31 0%,var(--bg) 55%);
-  }
-  :root[data-theme="light"] #loginScreen{background:radial-gradient(circle at 20% 20%,#e9edfb 0%,var(--bg) 55%);}
-  .auth-card{
-    width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:32px 28px;box-shadow:var(--shadow);
-  }
-  .auth-card .brand{justify-content:center;margin-bottom:6px;font-size:24px;}
-  .auth-sub{text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:22px;}
-  .auth-tabs{display:flex;background:var(--card-2);border-radius:10px;padding:4px;margin-bottom:20px;}
-  .auth-tabs button{
-    flex:1;padding:9px;border:none;background:transparent;color:var(--text-dim);border-radius:8px;
-    cursor:pointer;font-weight:700;font-size:13px;transition:var(--transition);
-  }
-  .auth-tabs button.active{background:var(--brand-grad);color:#fff;}
-  .auth-links{display:flex;justify-content:space-between;align-items:center;margin:8px 0 18px;font-size:12.5px;}
-  .auth-links a{color:var(--brand);text-decoration:none;cursor:pointer;}
-  .divider{display:flex;align-items:center;gap:10px;color:var(--text-faint);font-size:12px;margin:18px 0;}
-  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border);}
-  .admin-link{text-align:center;margin-top:16px;font-size:12px;color:var(--text-faint);}
-  .admin-link a{color:var(--text-dim);text-decoration:underline;cursor:pointer;}
-
-  /* ---------- App shell ---------- */
-  #app{display:none;min-height:100vh;}
-  #app.active{display:flex;}
-  .sidebar{
-    width:var(--sidebar-w);flex-shrink:0;background:var(--bg-elev);border-right:1px solid var(--border);
-    display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;
-  }
-  .sidebar .brand{padding:6px 8px 22px;}
-  .nav-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;flex:1;}
-  .nav-item{
-    display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;
-    color:var(--text-dim);font-weight:600;font-size:14px;transition:var(--transition);user-select:none;
-  }
-  .nav-item .ic{width:20px;text-align:center;font-size:16px;}
-  .nav-item:hover{background:var(--card-2);color:var(--text);}
-  .nav-item.active{background:var(--brand-grad);color:#fff;}
-  .sidebar-foot{border-top:1px solid var(--border);padding-top:12px;margin-top:8px;}
-
-  .main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
-  .topbar{
-    display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
-    border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:20;
-  }
-  .topbar h1{font-size:20px;margin:0;font-weight:800;}
-  .topbar-right{display:flex;align-items:center;gap:14px;}
-  .icon-btn{
-    width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--card);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:var(--text);
-    font-size:16px;transition:var(--transition);
-  }
-  .icon-btn:hover{background:var(--card-2);}
-  .badge-dot{
-    position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;
-    min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;
-  }
-  .avatar{
-    width:38px;height:38px;border-radius:50%;background:var(--brand-grad);color:#fff;font-weight:800;
-    display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;
-  }
-  .content{padding:22px 24px 100px;flex:1;}
-  .view{display:none;animation:fadein .25s ease;}
-  .view.active{display:block;}
-  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
-
-  /* Notification dropdown */
-  .dropdown{
-    position:absolute;top:56px;right:24px;width:320px;max-height:420px;overflow-y:auto;background:var(--card);
-    border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);z-index:40;display:none;
-  }
-  .dropdown.open{display:block;}
-  .dropdown-head{padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700;display:flex;justify-content:space-between;align-items:center;}
-  .dropdown-head a{font-size:12px;color:var(--brand);cursor:pointer;font-weight:600;}
-  .notif-item{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;}
-  .notif-item:last-child{border-bottom:none;}
-  .notif-item .n-title{font-weight:700;margin-bottom:2px;}
-  .notif-item .n-time{color:var(--text-faint);font-size:11px;margin-top:4px;}
-  .notif-empty{padding:26px;text-align:center;color:var(--text-faint);font-size:13px;}
-
-  /* Cards & grids */
-  .grid{display:grid;gap:16px;}
-  .grid-4{grid-template-columns:repeat(4,1fr);}
-  .grid-3{grid-template-columns:repeat(3,1fr);}
-  .grid-2{grid-template-columns:repeat(2,1fr);}
-  @media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
-
-  .card{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-    padding:18px 20px;box-shadow:var(--shadow);
-  }
-  .card h3{margin:0 0 4px;font-size:13px;color:var(--text-dim);font-weight:600;}
-  .card .big{font-size:26px;font-weight:800;margin:6px 0 4px;}
-  .card .sub{font-size:12.5px;color:var(--text-faint);}
-  .pill{
-    display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;
-  }
-  .pill.up{background:rgba(31,210,138,.15);color:var(--green);}
-  .pill.down{background:rgba(255,92,108,.15);color:var(--red);}
-  .demo-banner{
-    background:linear-gradient(135deg,rgba(91,140,255,.15),rgba(138,91,255,.15));
-    border:1px solid rgba(91,140,255,.3);border-radius:var(--radius-sm);padding:12px 16px;
-    font-size:13px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:10px;color:var(--text);
-  }
-  .section-title{font-size:17px;font-weight:800;margin:26px 0 14px;}
-  .section-title:first-child{margin-top:0;}
-
-  /* Tables */
-  .table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
-  table{width:100%;border-collapse:collapse;min-width:640px;}
-  thead th{
-    text-align:left;font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.4px;
-    padding:12px 16px;background:var(--card-2);white-space:nowrap;
-  }
-  tbody td{padding:13px 16px;font-size:13.5px;border-top:1px solid var(--border);white-space:nowrap;}
-  tbody tr:hover{background:var(--card-2);}
-  .coin-name{display:flex;align-items:center;gap:10px;font-weight:700;}
-  .coin-ic{
-    width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:800;font-size:12px;flex-shrink:0;
-  }
-  .status-tag{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
-  .status-Completed{background:rgba(31,210,138,.15);color:var(--green);}
-  .status-Pending{background:rgba(255,184,77,.15);color:var(--amber);}
-  .status-Failed{background:rgba(255,92,108,.15);color:var(--red);}
-
-  .filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-  .filters select{padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;}
-
-  /* Trade panel */
-  .trade-layout{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start;}
-  @media(max-width:900px){.trade-layout{grid-template-columns:1fr;}}
-  .segmented{display:flex;background:var(--card-2);border-radius:10px;padding:4px;margin-bottom:16px;}
-  .segmented button{flex:1;padding:10px;border:none;background:transparent;border-radius:8px;color:var(--text-dim);font-weight:700;cursor:pointer;transition:var(--transition);}
-  .segmented button.active.buy{background:var(--green);color:#06231a;}
-  .segmented button.active.sell{background:var(--red);color:#2b0508;}
-  .order-summary{background:var(--card-2);border-radius:10px;padding:14px;margin:14px 0;font-size:13.5px;}
-  .order-summary div{display:flex;justify-content:space-between;padding:4px 0;}
-  .order-summary .total{font-weight:800;border-top:1px solid var(--border);margin-top:6px;padding-top:8px;}
-
-  /* Chart */
-  .chart-tabs{display:flex;gap:6px;margin-bottom:12px;}
-  .chart-tabs button{
-    padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card-2);color:var(--text-dim);
-    cursor:pointer;font-size:12.5px;font-weight:700;
-  }
-  .chart-tabs button.active{background:var(--brand-grad);color:#fff;border-color:transparent;}
-  canvas#priceChart{width:100%;height:260px;display:block;}
-  .coin-select-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
-  .price-live{font-size:26px;font-weight:800;}
-
-  /* Portfolio */
-  .holding-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);}
-  .holding-row:first-child{border-top:none;}
-  .alloc-bar{height:10px;border-radius:6px;background:var(--card-2);overflow:hidden;display:flex;margin:14px 0;}
-  .alloc-seg{height:100%;}
-
-  /* Profile */
-  .profile-head{display:flex;align-items:center;gap:18px;margin-bottom:20px;flex-wrap:wrap;}
-  .avatar-lg{
-    width:76px;height:76px;border-radius:50%;background:var(--brand-grad);color:#fff;font-weight:900;font-size:28px;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .verify-badge{background:rgba(31,210,138,.15);color:var(--green);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;}
-
-  /* Settings */
-  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);gap:14px;flex-wrap:wrap;}
-  .setting-row:first-child{border-top:none;}
-  .setting-row .label{font-weight:700;font-size:14px;}
-  .setting-row .desc{font-size:12.5px;color:var(--text-faint);margin-top:2px;}
-  .switch{position:relative;width:46px;height:26px;flex-shrink:0;}
-  .switch input{opacity:0;width:0;height:0;}
-  .slider-toggle{
-    position:absolute;inset:0;background:var(--border);border-radius:20px;cursor:pointer;transition:var(--transition);
-  }
-  .slider-toggle::before{
-    content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;
-    transition:var(--transition);
-  }
-  .switch input:checked + .slider-toggle{background:var(--brand-grad);}
-  .switch input:checked + .slider-toggle::before{transform:translateX(20px);}
-
-  /* Modal */
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;
-    z-index:100;padding:20px;
-  }
-  .modal-overlay.open{display:flex;}
-  .modal{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;
-    width:100%;max-width:420px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);animation:fadein .2s ease;
-  }
-  .modal h2{margin:0 0 4px;font-size:19px;}
-  .modal-close{position:absolute;}
-  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-  .modal-head button{background:none;border:none;font-size:20px;color:var(--text-dim);cursor:pointer;}
-
-  /* Toast */
-  #toastWrap{position:fixed;bottom:90px;right:20px;z-index:200;display:flex;flex-direction:column;gap:10px;}
-  @media(min-width:769px){#toastWrap{bottom:20px;}}
-  .toast{
-    background:var(--card);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:10px;
-    padding:12px 16px;min-width:240px;max-width:320px;box-shadow:var(--shadow);font-size:13.5px;
-    animation:slidein .25s ease;
-  }
-  .toast.err{border-left-color:var(--red);}
-  .toast .t-title{font-weight:700;margin-bottom:2px;}
-  @keyframes slidein{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:none;}}
-
-  /* Mobile bottom nav */
-  .bottom-nav{
-    display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-elev);border-top:1px solid var(--border);
-    z-index:50;padding:6px 2px calc(6px + env(safe-area-inset-bottom));
-  }
-  .bottom-nav ul{list-style:none;display:flex;margin:0;padding:0;overflow-x:auto;}
-  .bottom-nav li{
-    flex:1 0 auto;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;
-    color:var(--text-faint);font-size:10.5px;font-weight:700;cursor:pointer;
-  }
-  .bottom-nav li .ic{font-size:18px;}
-  .bottom-nav li.active{color:var(--brand);}
-
-  @media(max-width:900px){
-    .sidebar{display:none;}
-    .bottom-nav{display:block;}
-    .content{padding:16px 14px 90px;}
-    .topbar{padding:14px 16px;}
-  }
-
-  .fab-admin{margin-top:auto;}
-  .admin-badge{background:var(--amber);color:#231600;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;}
-</style>
+<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
-<!-- ===================== LOGIN SCREEN ===================== -->
 <div id="loginScreen">
   <div class="auth-card">
     <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
@@ -352,7 +19,7 @@
       <button id="tabSignup" onclick="setAuthTab('signup')">Create Account</button>
     </div>
 
-    <form id="authForm" onsubmit="return handleAuthSubmit(event)">
+    <form id="authForm" data-mode="login" onsubmit="return handleAuthSubmit(event)">
       <div class="field" id="nameField" style="display:none;">
         <label>Full name</label>
         <input type="text" id="authName" placeholder="Jane Trader" autocomplete="name">
@@ -369,9 +36,7 @@
         <small class="err">Password must be at least 6 characters.</small>
       </div>
       <div class="auth-links">
-        <label style="display:flex;align-items:center;gap:6px;color:var(--text-dim);cursor:pointer;">
-          <input type="checkbox" id="rememberMe" style="width:auto;"> Remember me
-        </label>
+        <span></span>
         <a onclick="forgotPassword()">Forgot password?</a>
       </div>
       <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">Log In</button>
@@ -384,429 +49,60 @@
   </div>
 </div>
 
-<!-- ===================== ADMIN LOGIN MODAL ===================== -->
 <div class="modal-overlay" id="adminLoginOverlay">
   <div class="modal">
     <div class="modal-head"><h2>Admin Demo Login</h2><button onclick="closeModal('adminLoginOverlay')">✕</button></div>
-    <p class="help-text">This grants access to the <strong>Demo Admin Panel</strong> only. No real financial administration is performed.</p>
+    <p class="help-text">Admin access is granted only to accounts that a project owner has manually added to the
+      <code>admins</code> node in the Firebase Realtime Database. This grants access to the
+      <strong>Demo Admin Panel</strong> only — no real financial administration is performed.</p>
     <form onsubmit="return handleAdminLogin(event)">
       <div class="field">
-        <label>Admin username</label>
-        <input type="text" id="adminUser" placeholder="admin" autocomplete="off">
+        <label>Admin email</label>
+        <input type="email" id="adminUser" placeholder="admin@example.com" autocomplete="off">
       </div>
       <div class="field">
-        <label>Admin passcode</label>
-        <input type="password" id="adminPass" placeholder="Any passcode (demo)" autocomplete="off">
+        <label>Password</label>
+        <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
       </div>
       <button type="submit" class="btn btn-primary btn-block">Enter Admin Panel</button>
     </form>
   </div>
 </div>
 
-<!-- ===================== APP SHELL ===================== -->
-<div id="app">
-  <aside class="sidebar">
-    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
-    <ul class="nav-list" id="sidebarNav"></ul>
-    <div class="sidebar-foot">
-      <div class="nav-item" onclick="logout()"><span class="ic">↩</span> Log Out</div>
-    </div>
-  </aside>
-
-  <div class="main-col">
-    <div class="topbar">
-      <h1 id="viewTitle">Dashboard</h1>
-      <div class="topbar-right">
-        <button class="icon-btn" onclick="toggleDropdown('notifDropdown')" title="Notifications">
-          🔔<span class="badge-dot hidden" id="notifBadge">0</span>
-        </button>
-        <div class="avatar" onclick="navigate('profile')" id="topAvatar" title="Profile">U</div>
-      </div>
-      <div class="dropdown" id="notifDropdown">
-        <div class="dropdown-head"><span>Notifications</span><a onclick="clearNotifications()">Clear all</a></div>
-        <div id="notifList"></div>
-      </div>
-    </div>
-
-    <div class="content">
-
-      <!-- DASHBOARD -->
-      <section class="view" id="view-dashboard">
-        <div class="demo-banner">🧪 <div><strong>Demo Mode:</strong> All balances and activity below are simulated. No real funds are involved.</div></div>
-        <div class="grid grid-4">
-          <div class="card"><h3>Total Balance</h3><div class="big" id="d-total">$0.00</div><div class="sub">Cash + holdings</div></div>
-          <div class="card"><h3>Available Balance</h3><div class="big" id="d-available">$0.00</div><div class="sub">Ready to trade / withdraw</div></div>
-          <div class="card"><h3>Today's P/L</h3><div class="big" id="d-pl">$0.00</div><div class="sub" id="d-pl-pct">0.00%</div></div>
-          <div class="card"><h3>Portfolio Value</h3><div class="big" id="d-portfolio">$0.00</div><div class="sub">Crypto holdings</div></div>
-        </div>
-        <div class="grid grid-2" style="margin-top:16px;">
-          <div class="card"><h3>Total Deposits</h3><div class="big" id="d-deposits">$0.00</div><div class="sub">Lifetime demo deposits</div></div>
-          <div class="card"><h3>Total Withdrawals</h3><div class="big" id="d-withdrawals">$0.00</div><div class="sub">Lifetime demo withdrawals</div></div>
-        </div>
-
-        <h2 class="section-title">Market Snapshot</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Coin</th><th>Price</th><th>24h</th></tr></thead>
-            <tbody id="dashMarketBody"></tbody>
-          </table>
-        </div>
-
-        <h2 class="section-title">Recent Transactions</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Asset</th><th>Amount</th><th>Status</th></tr></thead>
-            <tbody id="dashTxBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- MARKETS -->
-      <section class="view" id="view-markets">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Coin</th><th>Symbol</th><th>Price</th><th>24h Change</th><th style="text-align:right;">Action</th></tr></thead>
-            <tbody id="marketsBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- TRADE -->
-      <section class="view" id="view-trade">
-        <div class="demo-banner">🧪 <div><strong>Demo Trading:</strong> Orders are simulated — no real crypto is bought or sold.</div></div>
-        <div class="trade-layout">
-          <div class="card">
-            <div class="coin-select-row">
-              <select id="tradeCoin" onchange="renderChart()"></select>
-              <div class="price-live" id="tradeCoinPrice">$0.00</div>
-            </div>
-            <div class="chart-tabs" id="chartTabs"></div>
-            <canvas id="priceChart" width="600" height="260"></canvas>
-          </div>
-          <div class="card">
-            <h3 style="margin-bottom:10px;">Place Demo Order</h3>
-            <div class="segmented">
-              <button type="button" class="active buy" id="segBuy" onclick="setOrderSide('buy')">Buy</button>
-              <button type="button" class="sell" id="segSell" onclick="setOrderSide('sell')">Sell</button>
-            </div>
-            <form onsubmit="return submitOrder(event)">
-              <div class="field">
-                <label>Amount (USD)</label>
-                <input type="number" id="orderAmount" placeholder="0.00" min="0" step="0.01" oninput="updateOrderSummary()">
-                <small class="err">Enter a valid amount.</small>
-              </div>
-              <div class="order-summary">
-                <div><span>Coin price</span><span id="os-price">$0.00</span></div>
-                <div><span>Est. quantity</span><span id="os-qty">0</span></div>
-                <div><span>Fee (demo, 0.1%)</span><span id="os-fee">$0.00</span></div>
-                <div class="total"><span>Total</span><span id="os-total">$0.00</span></div>
-              </div>
-              <button type="submit" class="btn btn-primary btn-block" id="orderSubmitBtn">Buy (Demo)</button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <!-- PORTFOLIO -->
-      <section class="view" id="view-portfolio">
-        <div class="grid grid-3">
-          <div class="card"><h3>Total Portfolio Value</h3><div class="big" id="p-total">$0.00</div></div>
-          <div class="card"><h3>Available Cash</h3><div class="big" id="p-cash">$0.00</div></div>
-          <div class="card"><h3>Total P/L</h3><div class="big" id="p-pl">$0.00</div></div>
-        </div>
-        <h2 class="section-title">Allocation</h2>
-        <div class="card">
-          <div class="alloc-bar" id="allocBar"></div>
-          <div id="allocLegend" style="display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;"></div>
-        </div>
-        <h2 class="section-title">Holdings</h2>
-        <div class="card" id="holdingsList"></div>
-      </section>
-
-      <!-- TRANSACTIONS -->
-      <section class="view" id="view-transactions">
-        <div class="filters">
-          <select id="filterType" onchange="renderTransactions()">
-            <option value="">All Types</option>
-            <option>Deposit</option><option>Withdrawal</option><option>Buy</option><option>Sell</option>
-          </select>
-          <select id="filterStatus" onchange="renderTransactions()">
-            <option value="">All Statuses</option>
-            <option>Completed</option><option>Pending</option><option>Failed</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Transaction ID</th><th>Date</th><th>Type</th><th>Asset</th><th>Amount</th><th>Status</th></tr></thead>
-            <tbody id="txBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- DEPOSIT -->
-      <section class="view" id="view-deposit">
-        <div class="card" style="max-width:460px;">
-          <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Deposit Funds</h3>
-          <div class="notice">Demo transaction — no real funds are transferred.</div>
-          <form onsubmit="return submitDeposit(event)">
-            <div class="field">
-              <label>Amount</label>
-              <input type="number" id="depAmount" min="0" step="0.01" placeholder="0.00">
-              <small class="err">Enter an amount greater than 0.</small>
-            </div>
-            <div class="field">
-              <label>Currency</label>
-              <select id="depCurrency"><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
-            </div>
-            <div class="field">
-              <label>Payment method</label>
-              <select id="depMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto</option></select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Submit Demo Deposit</button>
-          </form>
-        </div>
-      </section>
-
-      <!-- WITHDRAW -->
-      <section class="view" id="view-withdraw">
-        <div class="card" style="max-width:460px;">
-          <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Withdraw Funds</h3>
-          <div class="notice">Demo withdrawal — no real funds are transferred.</div>
-          <form onsubmit="return submitWithdrawal(event)">
-            <div class="field">
-              <label>Amount <span class="help-text" id="wAvailHint"></span></label>
-              <input type="number" id="wdAmount" min="0" step="0.01" placeholder="0.00">
-              <small class="err" id="wdAmountErr">Enter a valid amount within your available balance.</small>
-            </div>
-            <div class="field">
-              <label>Currency</label>
-              <select id="wdCurrency"><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
-            </div>
-            <div class="field">
-              <label>Withdrawal method</label>
-              <select id="wdMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto Wallet</option></select>
-            </div>
-            <div class="field">
-              <label>Destination / account</label>
-              <input type="text" id="wdDestination" placeholder="Account number or wallet address (demo)">
-              <small class="err">Destination is required.</small>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Submit Demo Withdrawal</button>
-          </form>
-        </div>
-      </section>
-
-      <!-- PROFILE -->
-      <section class="view" id="view-profile">
-        <div class="card">
-          <div class="profile-head">
-            <div class="avatar-lg" id="profileAvatar">U</div>
-            <div>
-              <div style="font-size:19px;font-weight:800;" id="profileNameDisplay">User</div>
-              <div style="color:var(--text-faint);font-size:13px;" id="profileEmailDisplay">user@example.com</div>
-              <div style="margin-top:6px;"><span class="verify-badge" id="verifyBadge">✓ Demo Verified</span></div>
-            </div>
-          </div>
-          <div class="grid grid-2" style="margin-bottom:18px;">
-            <div><div class="sub">Account ID</div><div style="font-weight:700;" id="profileAcctId">—</div></div>
-            <div><div class="sub">Account Created</div><div style="font-weight:700;" id="profileCreated">—</div></div>
-          </div>
-          <form onsubmit="return saveProfile(event)">
-            <div class="field"><label>Full name</label><input type="text" id="editName"></div>
-            <div class="field"><label>Email</label><input type="email" id="editEmail"></div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </form>
-        </div>
-      </section>
-
-      <!-- SETTINGS -->
-      <section class="view" id="view-settings">
-        <div class="card">
-          <div class="setting-row">
-            <div><div class="label">Dark Mode</div><div class="desc">Toggle between dark and light theme</div></div>
-            <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleTheme()"><span class="slider-toggle"></span></label>
-          </div>
-          <div class="setting-row">
-            <div><div class="label">Display Currency</div><div class="desc">Used across the dashboard</div></div>
-            <select id="currencyPref" onchange="saveSettingsField('currency', this.value)">
-              <option>USD</option><option>EUR</option><option>GBP</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <div><div class="label">Notification Preferences</div><div class="desc">Receive in-app notifications for demo activity</div></div>
-            <label class="switch"><input type="checkbox" id="notifToggle" onchange="saveSettingsField('notifications', this.checked)"><span class="slider-toggle"></span></label>
-          </div>
-          <div class="setting-row">
-            <div><div class="label">Two-Factor Security (Demo)</div><div class="desc">Simulated extra login verification</div></div>
-            <label class="switch"><input type="checkbox" id="twoFAToggle" onchange="saveSettingsField('twoFA', this.checked)"><span class="slider-toggle"></span></label>
-          </div>
-          <div class="setting-row">
-            <div><div class="label">Log Out</div><div class="desc">End your current demo session</div></div>
-            <button class="btn btn-danger btn-sm" onclick="logout()">Log Out</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ADMIN -->
-      <section class="view" id="view-admin">
-        <div class="demo-banner">🛡️ <div><strong>Demo Admin Panel:</strong> For demonstration only. No real financial administration is performed.</div></div>
-        <div class="grid grid-4">
-          <div class="card"><h3>Total Demo Users</h3><div class="big" id="a-users">0</div></div>
-          <div class="card"><h3>Total Demo Deposits</h3><div class="big" id="a-deposits">$0.00</div></div>
-          <div class="card"><h3>Total Demo Withdrawals</h3><div class="big" id="a-withdrawals">$0.00</div></div>
-          <div class="card"><h3>Demo Trading Volume</h3><div class="big" id="a-volume">$0.00</div></div>
-        </div>
-
-        <h2 class="section-title">Demo Users</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th style="text-align:right;">Adjust Balance</th></tr></thead>
-            <tbody id="adminUsersBody"></tbody>
-          </table>
-        </div>
-
-        <h2 class="section-title">All Transactions</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Asset</th><th>Amount</th><th>Status</th><th style="text-align:right;">Change Status</th></tr></thead>
-            <tbody id="adminTxBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-    </div>
-  </div>
-</div>
-
-<nav class="bottom-nav" id="bottomNav">
-  <ul id="bottomNavList"></ul>
-</nav>
-
 <div id="toastWrap"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
 <script>
-/* =========================================================================
-   BitNova — Demo Crypto Broker Dashboard
-   Single-file vanilla JS app. All data is simulated and stored in
-   localStorage. Nothing here connects to real markets, banks or wallets.
-   ========================================================================= */
+bnApplyTheme(localStorage.getItem('bitnova_theme') || 'dark');
 
-const STORAGE_KEY = 'bitnova_state_v1';
-const SESSION_KEY = 'bitnova_session_v1';
+// If already signed in, skip straight to the dashboard.
+BN.auth.onAuthStateChanged((user) => {
+  if (user) location.href = 'dashboard.html';
+});
 
-const COINS = [
-  {id:'BTC', name:'Bitcoin', price:64250.32, change24h:2.34, color:'#f7931a'},
-  {id:'ETH', name:'Ethereum', price:3145.87, change24h:1.12, color:'#627eea'},
-  {id:'SOL', name:'Solana', price:142.55, change24h:-3.48, color:'#14f195'},
-  {id:'BNB', name:'BNB', price:571.20, change24h:0.87, color:'#f3ba2f'},
-  {id:'XRP', name:'XRP', price:0.5231, change24h:-1.76, color:'#23292f'},
-  {id:'ADA', name:'Cardano', price:0.4487, change24h:4.21, color:'#0033ad'},
-  {id:'DOGE', name:'Dogecoin', price:0.1523, change24h:-0.62, color:'#c2a633'},
-  {id:'USDT', name:'Tether', price:1.00, change24h:0.01, color:'#26a17b'},
-];
-
-const NAV_ITEMS = [
-  {id:'dashboard', label:'Dashboard', icon:'🏠'},
-  {id:'markets', label:'Markets', icon:'📈'},
-  {id:'trade', label:'Trade', icon:'⇄'},
-  {id:'portfolio', label:'Portfolio', icon:'💼'},
-  {id:'transactions', label:'Transactions', icon:'🧾'},
-  {id:'deposit', label:'Deposit', icon:'⬇'},
-  {id:'withdraw', label:'Withdraw', icon:'⬆'},
-  {id:'profile', label:'Profile', icon:'👤'},
-  {id:'settings', label:'Settings', icon:'⚙'},
-];
-
-let state = null;
-let currentUser = null; // email key
-let currentView = 'dashboard';
-let orderSide = 'buy';
-let chartTimeframe = '1D';
-let chartSeeds = {}; // cache per coin+timeframe
-
-/* ---------------------------- Utilities ---------------------------- */
-function fmtUSD(n){
-  const v = Number(n)||0;
-  return v.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function fmtQty(n){
-  const v = Number(n)||0;
-  return v.toLocaleString('en-US',{maximumFractionDigits:6});
-}
-function fmtDate(ts){
-  const d = new Date(ts);
-  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
-}
-function genId(prefix){
-  const rand = Math.random().toString(36).substring(2,8).toUpperCase();
-  const ts = Date.now().toString(36).toUpperCase().slice(-5);
-  return `${prefix}-${ts}${rand}`;
-}
-function escapeHtml(str){
-  return String(str==null?'':str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ---------------------------- Persistence ---------------------------- */
-function loadDB(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { users:{}, globalSettings:{} };
-  }catch(e){ return { users:{}, globalSettings:{} }; }
-}
-function saveDB(db){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-}
-function getDB(){ return loadDB(); }
-
-function defaultUser(name, email){
-  return {
-    profile:{
-      name: name || 'Demo Trader',
-      email: email,
-      acctId: genId('BNU'),
-      created: Date.now(),
-      verified: true,
-    },
-    balance:{
-      cash: 25480.00,
-      totalDeposits: 0,
-      totalWithdrawals: 0,
-    },
-    holdings:{}, // {BTC:{qty:1.2}}
-    transactions:[],
-    notifications:[],
-    settings:{ theme:'dark', currency:'USD', notifications:true, twoFA:false },
-  };
-}
-
-function getCurrentUserData(){
-  const db = loadDB();
-  return db.users[currentUser];
-}
-function updateCurrentUser(mutator){
-  const db = loadDB();
-  const u = db.users[currentUser];
-  mutator(u);
-  db.users[currentUser] = u;
-  saveDB(db);
-}
-
-/* ---------------------------- Auth ---------------------------- */
-function setAuthTab(tab){
-  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
-  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
-  document.getElementById('nameField').style.display = tab==='signup' ? 'block' : 'none';
-  document.getElementById('authSubmitBtn').textContent = tab==='signup' ? 'Create Account' : 'Log In';
+function setAuthTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+  document.getElementById('nameField').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('authSubmitBtn').textContent = tab === 'signup' ? 'Create Account' : 'Log In';
   document.getElementById('authForm').dataset.mode = tab;
   clearAuthErrors();
 }
-function clearAuthErrors(){
-  document.querySelectorAll('#authForm .field').forEach(f=>f.classList.remove('invalid'));
+function clearAuthErrors() {
+  document.querySelectorAll('#authForm .field').forEach((f) => f.classList.remove('invalid'));
 }
-function isValidEmail(e){
+function isValidEmail(e) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
-function handleAuthSubmit(ev){
+function setBtnBusy(busy) {
+  document.getElementById('authSubmitBtn').disabled = busy;
+}
+async function handleAuthSubmit(ev) {
   ev.preventDefault();
   clearAuthErrors();
   const mode = document.getElementById('authForm').dataset.mode || 'login';
@@ -814,685 +110,73 @@ function handleAuthSubmit(ev){
   const pass = document.getElementById('authPass').value;
   const name = document.getElementById('authName').value.trim();
   let valid = true;
-  if(!isValidEmail(email)){ document.getElementById('emailField').classList.add('invalid'); valid = false; }
-  if(!pass || pass.length < 6){ document.getElementById('passField').classList.add('invalid'); valid = false; }
-  if(mode==='signup' && !name){ document.getElementById('nameField').classList.add('invalid'); valid = false; }
-  if(!valid) return false;
+  if (!isValidEmail(email)) { document.getElementById('emailField').classList.add('invalid'); valid = false; }
+  if (!pass || pass.length < 6) { document.getElementById('passField').classList.add('invalid'); valid = false; }
+  if (mode === 'signup' && !name) { document.getElementById('nameField').classList.add('invalid'); valid = false; }
+  if (!valid) return false;
 
-  const db = loadDB();
-  if(mode === 'signup'){
-    if(db.users[email]){
-      alert('An account with this email already exists. Please log in instead.');
+  setBtnBusy(true);
+  try {
+    let cred;
+    if (mode === 'signup') {
+      cred = await BN.auth.createUserWithEmailAndPassword(email, pass);
+      await cred.user.updateProfile({ displayName: name });
+      await BN.userRef(cred.user.uid).set(BN.defaultUserRecord(name, email));
+    } else {
+      cred = await BN.auth.signInWithEmailAndPassword(email, pass);
+      await BN.ensureUserRecord(cred.user);
+    }
+    location.href = 'dashboard.html';
+  } catch (err) {
+    bnShowToast('Authentication failed', err.message || 'Please check your details and try again.', true);
+  } finally {
+    setBtnBusy(false);
+  }
+  return false;
+}
+function forgotPassword() {
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email || !isValidEmail(email)) {
+    bnShowToast('Enter your email', 'Type your account email above, then click "Forgot password?" again.', true);
+    return;
+  }
+  BN.auth.sendPasswordResetEmail(email)
+    .then(() => bnShowToast('Reset email sent', `Check ${email} for password reset instructions.`))
+    .catch((err) => bnShowToast('Could not send reset email', err.message, true));
+}
+async function loginDemo() {
+  setBtnBusy(true);
+  try {
+    const cred = await BN.auth.signInAnonymously();
+    await BN.ensureUserRecord(cred.user);
+    location.href = 'dashboard.html';
+  } catch (err) {
+    bnShowToast('Demo login failed', err.message, true);
+  } finally {
+    setBtnBusy(false);
+  }
+}
+function openAdminLogin() { document.getElementById('adminLoginOverlay').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+async function handleAdminLogin(ev) {
+  ev.preventDefault();
+  const email = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  if (!email || !pass) { bnShowToast('Missing details', 'Enter your admin email and password.', true); return false; }
+  try {
+    const cred = await BN.auth.signInWithEmailAndPassword(email, pass);
+    const admin = await BN.isAdmin(cred.user.uid);
+    if (!admin) {
+      await BN.auth.signOut();
+      bnShowToast('Not an admin', 'This account has not been granted admin access in the database.', true);
       return false;
     }
-    db.users[email] = defaultUser(name, email);
-    db.users[email]._passHash = simpleHash(pass);
-    saveDB(db);
-  } else {
-    const u = db.users[email];
-    if(!u || u._passHash !== simpleHash(pass)){
-      alert('Invalid email or password (demo accounts are stored only in this browser).');
-      return false;
-    }
+    location.href = 'admin.html';
+  } catch (err) {
+    bnShowToast('Admin login failed', err.message, true);
   }
-  loginAs(email);
   return false;
 }
-function simpleHash(str){
-  // Non-cryptographic demo-only hash so we never store plaintext passwords.
-  let hash = 0;
-  for(let i=0;i<str.length;i++){ hash = ((hash<<5)-hash + str.charCodeAt(i))|0; }
-  return String(hash);
-}
-function loginDemo(){
-  const email = 'demo@bitnova.app';
-  const db = loadDB();
-  if(!db.users[email]){
-    db.users[email] = defaultUser('Demo Trader', email);
-    db.users[email]._passHash = simpleHash('demo123');
-    saveDB(db);
-  }
-  loginAs(email);
-}
-function forgotPassword(){
-  alert('This is a demo app — passwords are stored only in your browser. Try "Continue with Demo Account" instead.');
-}
-function loginAs(email){
-  currentUser = email;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify({user:email, role:'user'}));
-  localStorage.setItem(SESSION_KEY, JSON.stringify({user:email, role:'user'}));
-  boot();
-}
-function logout(){
-  localStorage.removeItem(SESSION_KEY);
-  location.reload();
-}
-
-/* ---------------------------- Admin login ---------------------------- */
-function openAdminLogin(){ document.getElementById('adminLoginOverlay').classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-function handleAdminLogin(ev){
-  ev.preventDefault();
-  // Demo-only: any non-empty username/passcode grants access to the DEMO admin panel.
-  const user = document.getElementById('adminUser').value.trim();
-  const pass = document.getElementById('adminPass').value.trim();
-  if(!user || !pass){ alert('Enter any demo username & passcode to continue.'); return false; }
-  closeModal('adminLoginOverlay');
-  localStorage.setItem(SESSION_KEY, JSON.stringify({user:'admin-demo', role:'admin'}));
-  currentUser = null;
-  bootAdmin();
-  return false;
-}
-
-/* ---------------------------- Boot / routing ---------------------------- */
-document.addEventListener('DOMContentLoaded', ()=>{
-  buildNav();
-  buildAdminNav();
-  const sess = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-  if(sess && sess.role === 'admin'){ bootAdmin(); }
-  else if(sess && sess.user){ currentUser = sess.user; boot(); }
-  applyStoredTheme();
-});
-
-function applyStoredTheme(){
-  const t = localStorage.getItem('bitnova_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-}
-
-function buildNav(){
-  const sidebarNav = document.getElementById('sidebarNav');
-  const bottomList = document.getElementById('bottomNavList');
-  sidebarNav.innerHTML = NAV_ITEMS.map(n=>`<li class="nav-item" data-view="${n.id}" onclick="navigate('${n.id}')"><span class="ic">${n.icon}</span> ${n.label}</li>`).join('');
-  bottomList.innerHTML = NAV_ITEMS.slice(0,8).map(n=>`<li data-view="${n.id}" onclick="navigate('${n.id}')"><span class="ic">${n.icon}</span>${n.label}</li>`).join('');
-}
-function buildAdminNav(){
-  // Admin uses same shell but only 'admin' view + logout; we inject a link at runtime via bootAdmin.
-}
-
-function boot(){
-  const db = loadDB();
-  if(!db.users[currentUser]) { logout(); return; }
-  state = db.users[currentUser];
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').classList.add('active');
-  // theme from user settings takes priority
-  const theme = state.settings.theme || 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('bitnova_theme', theme);
-  document.getElementById('darkModeToggle').checked = theme === 'dark';
-  document.getElementById('notifToggle').checked = !!state.settings.notifications;
-  document.getElementById('twoFAToggle').checked = !!state.settings.twoFA;
-  document.getElementById('currencyPref').value = state.settings.currency || 'USD';
-
-  const initials = (state.profile.name||'U').split(' ').map(s=>s[0]).join('').substring(0,2).toUpperCase();
-  document.getElementById('topAvatar').textContent = initials;
-  document.getElementById('profileAvatar').textContent = initials;
-
-  populateCoinSelect();
-  buildChartTabs();
-  navigate('dashboard');
-  renderAll();
-}
-
-function bootAdmin(){
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').classList.add('active');
-  // Hide user-only nav items, show only admin + logout
-  document.getElementById('sidebarNav').innerHTML = `<li class="nav-item active" onclick="navigate('admin')"><span class="ic">🛡</span> Admin Panel<span class="admin-badge">DEMO</span></li>`;
-  document.getElementById('bottomNavList').innerHTML = `<li class="active" onclick="navigate('admin')"><span class="ic">🛡</span>Admin</li>`;
-  document.getElementById('topAvatar').textContent = 'AD';
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-admin').classList.add('active');
-  document.getElementById('viewTitle').textContent = 'Demo Admin Panel';
-  renderAdmin();
-}
-
-function navigate(viewId){
-  currentView = viewId;
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const el = document.getElementById('view-'+viewId);
-  if(el) el.classList.add('active');
-  document.querySelectorAll('.nav-item, .bottom-nav li').forEach(n=>{
-    n.classList.toggle('active', n.dataset.view === viewId);
-  });
-  const navItem = NAV_ITEMS.find(n=>n.id===viewId);
-  document.getElementById('viewTitle').textContent = navItem ? navItem.label : (viewId.charAt(0).toUpperCase()+viewId.slice(1));
-  document.getElementById('notifDropdown').classList.remove('open');
-  if(state){
-    if(viewId==='trade') renderChart();
-    if(viewId==='profile'){
-      document.getElementById('editName').value = state.profile.name;
-      document.getElementById('editEmail').value = state.profile.email;
-    }
-    renderAll();
-  }
-}
-
-/* ---------------------------- Rendering ---------------------------- */
-function renderAll(){
-  if(!state) return;
-  renderDashboard();
-  renderMarkets();
-  renderTransactions();
-  renderPortfolio();
-  renderProfile();
-  renderNotifications();
-  updateOrderSummary();
-}
-
-function computePortfolioValue(){
-  let total = 0;
-  for(const cid in state.holdings){
-    const h = state.holdings[cid];
-    const coin = COINS.find(c=>c.id===cid);
-    if(coin && h.qty>0) total += h.qty * coin.price;
-  }
-  return total;
-}
-
-function renderDashboard(){
-  const portfolioVal = computePortfolioValue();
-  const total = state.balance.cash + portfolioVal;
-  document.getElementById('d-total').textContent = fmtUSD(total);
-  document.getElementById('d-available').textContent = fmtUSD(state.balance.cash);
-  document.getElementById('d-portfolio').textContent = fmtUSD(portfolioVal);
-  document.getElementById('d-deposits').textContent = fmtUSD(state.balance.totalDeposits);
-  document.getElementById('d-withdrawals').textContent = fmtUSD(state.balance.totalWithdrawals);
-
-  // Simulated daily P/L based on 24h change of holdings + a small baseline
-  let pl = 0;
-  for(const cid in state.holdings){
-    const h = state.holdings[cid];
-    const coin = COINS.find(c=>c.id===cid);
-    if(coin) pl += h.qty * coin.price * (coin.change24h/100);
-  }
-  const plPct = total>0 ? (pl/total*100) : 0;
-  const plEl = document.getElementById('d-pl');
-  plEl.textContent = (pl>=0?'+':'') + fmtUSD(pl);
-  plEl.style.color = pl>=0 ? 'var(--green)' : 'var(--red)';
-  const plPctEl = document.getElementById('d-pl-pct');
-  plPctEl.textContent = (plPct>=0?'+':'') + plPct.toFixed(2) + '%';
-  plPctEl.style.color = pl>=0 ? 'var(--green)' : 'var(--red)';
-
-  document.getElementById('dashMarketBody').innerHTML = COINS.slice(0,5).map(coinRowHtml).join('');
-  document.getElementById('dashTxBody').innerHTML = state.transactions.slice(0,5).map(txRowHtml).join('') || emptyRow(6);
-}
-
-function coinRowHtml(c){
-  const up = c.change24h >= 0;
-  return `<tr>
-    <td><div class="coin-name"><span class="coin-ic" style="background:${c.color}">${c.id.substring(0,1)}</span> ${c.name} <span style="color:var(--text-faint);font-weight:500;">${c.id}</span></div></td>
-    <td>${fmtUSD(c.price)}</td>
-    <td><span class="pill ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(c.change24h).toFixed(2)}%</span></td>
-  </tr>`;
-}
-function emptyRow(cols){ return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-faint);padding:24px;">No data yet</td></tr>`; }
-
-function renderMarkets(){
-  document.getElementById('marketsBody').innerHTML = COINS.map(c=>{
-    const up = c.change24h >= 0;
-    return `<tr>
-      <td><div class="coin-name"><span class="coin-ic" style="background:${c.color}">${c.id.substring(0,1)}</span> ${c.name}</div></td>
-      <td>${c.id}</td>
-      <td>${fmtUSD(c.price)}</td>
-      <td><span class="pill ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(c.change24h).toFixed(2)}%</span></td>
-      <td style="text-align:right;">
-        <button class="btn btn-buy btn-sm" onclick="quickTrade('${c.id}','buy')">Buy</button>
-        <button class="btn btn-sell btn-sm" onclick="quickTrade('${c.id}','sell')">Sell</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-function quickTrade(coinId, side){
-  document.getElementById('tradeCoin').value = coinId;
-  setOrderSide(side);
-  navigate('trade');
-}
-
-function populateCoinSelect(){
-  document.getElementById('tradeCoin').innerHTML = COINS.map(c=>`<option value="${c.id}">${c.name} (${c.id})</option>`).join('');
-}
-
-function renderTransactions(){
-  const type = document.getElementById('filterType').value;
-  const status = document.getElementById('filterStatus').value;
-  let list = state.transactions.filter(t=> (!type || t.type===type) && (!status || t.status===status));
-  document.getElementById('txBody').innerHTML = list.map(txRowHtml).join('') || emptyRow(6);
-}
-function txRowHtml(t){
-  const signed = (t.type==='Withdrawal'||t.type==='Buy') ? '-' : (t.type==='Deposit'||t.type==='Sell') ? '+' : '';
-  return `<tr>
-    <td>${t.id}</td>
-    <td>${fmtDate(t.date)}</td>
-    <td>${t.type}</td>
-    <td>${t.asset}</td>
-    <td>${signed}${fmtUSD(t.amount)}</td>
-    <td><span class="status-tag status-${t.status}">${t.status}</span></td>
-  </tr>`;
-}
-
-function renderPortfolio(){
-  const portfolioVal = computePortfolioValue();
-  document.getElementById('p-total').textContent = fmtUSD(portfolioVal + state.balance.cash);
-  document.getElementById('p-cash').textContent = fmtUSD(state.balance.cash);
-
-  let pl = 0, costBasisTotal = 0;
-  const holdingsHtml = [];
-  const allocSegs = [];
-  Object.keys(state.holdings).forEach(cid=>{
-    const h = state.holdings[cid];
-    if(h.qty<=0) return;
-    const coin = COINS.find(c=>c.id===cid);
-    const value = h.qty * coin.price;
-    const costBasis = h.costBasis || 0;
-    const gain = value - costBasis;
-    pl += gain;
-    costBasisTotal += costBasis;
-    allocSegs.push({coin, value});
-    holdingsHtml.push(`<div class="holding-row">
-      <div class="coin-name"><span class="coin-ic" style="background:${coin.color}">${coin.id.substring(0,1)}</span>
-        <div><div>${coin.name}</div><div style="font-weight:400;color:var(--text-faint);font-size:12px;">${fmtQty(h.qty)} ${coin.id}</div></div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-weight:700;">${fmtUSD(value)}</div>
-        <div style="font-size:12px;color:${gain>=0?'var(--green)':'var(--red)'};">${gain>=0?'+':''}${fmtUSD(gain)}</div>
-      </div>
-    </div>`);
-  });
-  document.getElementById('p-pl').textContent = (pl>=0?'+':'') + fmtUSD(pl);
-  document.getElementById('p-pl').style.color = pl>=0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('holdingsList').innerHTML = holdingsHtml.join('') || '<div style="text-align:center;color:var(--text-faint);padding:20px;">No crypto holdings yet — try a demo trade!</div>';
-
-  const totalAlloc = allocSegs.reduce((s,a)=>s+a.value,0) || 1;
-  document.getElementById('allocBar').innerHTML = allocSegs.map(a=>`<div class="alloc-seg" style="width:${(a.value/totalAlloc*100).toFixed(2)}%;background:${a.coin.color};"></div>`).join('');
-  document.getElementById('allocLegend').innerHTML = allocSegs.map(a=>`<div><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${a.coin.color};margin-right:5px;"></span>${a.coin.id} ${(a.value/totalAlloc*100).toFixed(1)}%</div>`).join('') || '<span style="color:var(--text-faint);">No holdings to display</span>';
-}
-
-function renderProfile(){
-  document.getElementById('profileNameDisplay').textContent = state.profile.name;
-  document.getElementById('profileEmailDisplay').textContent = state.profile.email;
-  document.getElementById('profileAcctId').textContent = state.profile.acctId;
-  document.getElementById('profileCreated').textContent = new Date(state.profile.created).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('verifyBadge').textContent = state.profile.verified ? '✓ Demo Verified' : '⏳ Unverified (Demo)';
-}
-function saveProfile(ev){
-  ev.preventDefault();
-  const name = document.getElementById('editName').value.trim();
-  const email = document.getElementById('editEmail').value.trim();
-  if(!name || !isValidEmail(email)){ alert('Please enter a valid name and email.'); return false; }
-  updateCurrentUser(u=>{ u.profile.name = name; u.profile.email = email; });
-  state = getCurrentUserData();
-  const initials = name.split(' ').map(s=>s[0]).join('').substring(0,2).toUpperCase();
-  document.getElementById('topAvatar').textContent = initials;
-  document.getElementById('profileAvatar').textContent = initials;
-  renderProfile();
-  pushNotification('Profile updated', 'Your demo profile details were saved.');
-  showToast('Profile saved', 'Your changes have been saved.');
-  return false;
-}
-
-/* ---------------------------- Notifications ---------------------------- */
-function pushNotification(title, body){
-  if(!state) return;
-  if(state.settings.notifications === false) return;
-  updateCurrentUser(u=>{
-    u.notifications.unshift({id:genId('NOTIF'), title, body, time:Date.now(), read:false});
-    u.notifications = u.notifications.slice(0,40);
-  });
-  state = getCurrentUserData();
-  renderNotifications();
-}
-function renderNotifications(){
-  const list = state.notifications || [];
-  const unread = list.filter(n=>!n.read).length;
-  const badge = document.getElementById('notifBadge');
-  if(unread>0){ badge.textContent = unread; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
-  document.getElementById('notifList').innerHTML = list.length
-    ? list.map(n=>`<div class="notif-item"><div class="n-title">${escapeHtml(n.title)}</div><div>${escapeHtml(n.body)}</div><div class="n-time">${fmtDate(n.time)}</div></div>`).join('')
-    : '<div class="notif-empty">No notifications yet</div>';
-}
-function toggleDropdown(id){
-  const dd = document.getElementById(id);
-  const opening = !dd.classList.contains('open');
-  dd.classList.toggle('open');
-  if(opening && state){
-    updateCurrentUser(u=>{ u.notifications.forEach(n=>n.read=true); });
-    state = getCurrentUserData();
-    setTimeout(renderNotifications, 400);
-  }
-}
-function clearNotifications(){
-  updateCurrentUser(u=>{ u.notifications = []; });
-  state = getCurrentUserData();
-  renderNotifications();
-}
-document.addEventListener('click', (e)=>{
-  const dd = document.getElementById('notifDropdown');
-  if(dd && !dd.contains(e.target) && !e.target.closest('.icon-btn')) dd.classList.remove('open');
-});
-
-/* ---------------------------- Toasts ---------------------------- */
-function showToast(title, body, isErr){
-  const wrap = document.getElementById('toastWrap');
-  const t = document.createElement('div');
-  t.className = 'toast' + (isErr?' err':'');
-  t.innerHTML = `<div class="t-title">${escapeHtml(title)}</div><div>${escapeHtml(body)}</div>`;
-  wrap.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 3500);
-}
-
-/* ---------------------------- Trading ---------------------------- */
-function setOrderSide(side){
-  orderSide = side;
-  document.getElementById('segBuy').classList.toggle('active', side==='buy');
-  document.getElementById('segSell').classList.toggle('active', side==='sell');
-  document.getElementById('orderSubmitBtn').textContent = (side==='buy'?'Buy':'Sell') + ' (Demo)';
-  document.getElementById('orderSubmitBtn').className = 'btn btn-block ' + (side==='buy'?'btn-buy':'btn-sell');
-  updateOrderSummary();
-}
-function currentTradeCoin(){
-  const id = document.getElementById('tradeCoin').value;
-  return COINS.find(c=>c.id===id) || COINS[0];
-}
-function updateOrderSummary(){
-  if(!state) return;
-  const coin = currentTradeCoin();
-  document.getElementById('tradeCoinPrice').textContent = fmtUSD(coin.price);
-  const amount = parseFloat(document.getElementById('orderAmount').value) || 0;
-  const qty = amount>0 ? amount/coin.price : 0;
-  const fee = amount * 0.001;
-  document.getElementById('os-price').textContent = fmtUSD(coin.price);
-  document.getElementById('os-qty').textContent = fmtQty(qty) + ' ' + coin.id;
-  document.getElementById('os-fee').textContent = fmtUSD(fee);
-  document.getElementById('os-total').textContent = fmtUSD(amount + (orderSide==='buy'?fee:-fee));
-}
-function submitOrder(ev){
-  ev.preventDefault();
-  const amountField = document.getElementById('orderAmount').closest ? document.getElementById('orderAmount') : null;
-  const fieldWrap = amountField.closest('.field');
-  fieldWrap.classList.remove('invalid');
-  const coin = currentTradeCoin();
-  const amount = parseFloat(document.getElementById('orderAmount').value);
-  if(!amount || amount<=0){ fieldWrap.classList.add('invalid'); return false; }
-  const fee = amount * 0.001;
-  const qty = amount / coin.price;
-
-  if(orderSide === 'buy'){
-    const totalCost = amount + fee;
-    if(totalCost > state.balance.cash){
-      fieldWrap.classList.add('invalid');
-      fieldWrap.querySelector('small.err').textContent = 'Insufficient demo balance for this order.';
-      return false;
-    }
-    updateCurrentUser(u=>{
-      u.balance.cash -= totalCost;
-      if(!u.holdings[coin.id]) u.holdings[coin.id] = {qty:0, costBasis:0};
-      u.holdings[coin.id].qty += qty;
-      u.holdings[coin.id].costBasis += amount;
-      u.transactions.unshift({id:genId('TRX'), date:Date.now(), type:'Buy', asset:coin.id, amount:amount, status:'Completed'});
-    });
-  } else {
-    const held = (state.holdings[coin.id] && state.holdings[coin.id].qty) || 0;
-    if(qty > held){
-      fieldWrap.classList.add('invalid');
-      fieldWrap.querySelector('small.err').textContent = `You only hold ${fmtQty(held)} ${coin.id}.`;
-      return false;
-    }
-    updateCurrentUser(u=>{
-      const proceeds = amount - fee;
-      u.balance.cash += proceeds;
-      const h = u.holdings[coin.id];
-      const avgCost = h.qty>0 ? h.costBasis / h.qty : 0;
-      h.qty -= qty;
-      h.costBasis -= avgCost * qty;
-      if(h.qty < 1e-9){ h.qty = 0; h.costBasis = 0; }
-      u.transactions.unshift({id:genId('TRX'), date:Date.now(), type:'Sell', asset:coin.id, amount:amount, status:'Completed'});
-    });
-  }
-  state = getCurrentUserData();
-  document.getElementById('orderAmount').value = '';
-  updateOrderSummary();
-  renderAll();
-  pushNotification('Trade executed', `${orderSide==='buy'?'Bought':'Sold'} ${fmtQty(qty)} ${coin.id} for ${fmtUSD(amount)} (demo).`);
-  showToast('Order filled', `${orderSide==='buy'?'Bought':'Sold'} ${fmtQty(qty)} ${coin.id}.`);
-  return false;
-}
-
-/* ---------------------------- Deposit / Withdraw ---------------------------- */
-function submitDeposit(ev){
-  ev.preventDefault();
-  const field = document.getElementById('depAmount').closest('.field');
-  field.classList.remove('invalid');
-  const amount = parseFloat(document.getElementById('depAmount').value);
-  const currency = document.getElementById('depCurrency').value;
-  const method = document.getElementById('depMethod').value;
-  if(!amount || amount<=0){ field.classList.add('invalid'); return false; }
-  const ref = genId('DEP');
-  updateCurrentUser(u=>{
-    u.balance.cash += amount;
-    u.balance.totalDeposits += amount;
-    u.transactions.unshift({id:ref, date:Date.now(), type:'Deposit', asset:currency, amount:amount, status:'Completed', method});
-  });
-  state = getCurrentUserData();
-  document.getElementById('depAmount').value = '';
-  renderAll();
-  pushNotification('Deposit received', `Demo deposit of ${fmtUSD(amount)} via ${method} (Ref: ${ref}).`);
-  showToast('Deposit successful', `Reference ${ref} — ${fmtUSD(amount)} added to your demo balance.`);
-  return false;
-}
-
-function updateWithdrawHint(){
-  if(!state) return;
-  document.getElementById('wAvailHint').textContent = `(Available: ${fmtUSD(state.balance.cash)})`;
-}
-function submitWithdrawal(ev){
-  ev.preventDefault();
-  const amtField = document.getElementById('wdAmount').closest('.field');
-  const destField = document.getElementById('wdDestination').closest('.field');
-  amtField.classList.remove('invalid'); destField.classList.remove('invalid');
-  const amount = parseFloat(document.getElementById('wdAmount').value);
-  const currency = document.getElementById('wdCurrency').value;
-  const method = document.getElementById('wdMethod').value;
-  const destination = document.getElementById('wdDestination').value.trim();
-  let valid = true;
-  if(!amount || amount<=0){ amtField.classList.add('invalid'); amtField.querySelector('#wdAmountErr').textContent='Enter an amount greater than 0.'; valid=false; }
-  else if(amount > state.balance.cash){ amtField.classList.add('invalid'); amtField.querySelector('#wdAmountErr').textContent='Amount exceeds your available demo balance.'; valid=false; }
-  if(!destination){ destField.classList.add('invalid'); valid=false; }
-  if(!valid) return false;
-
-  const txId = genId('WD');
-  updateCurrentUser(u=>{
-    u.balance.cash -= amount;
-    u.balance.totalWithdrawals += amount;
-    u.transactions.unshift({id:txId, date:Date.now(), type:'Withdrawal', asset:currency, amount:amount, status:'Pending', method, destination});
-  });
-  state = getCurrentUserData();
-  document.getElementById('wdAmount').value = '';
-  document.getElementById('wdDestination').value = '';
-  renderAll();
-  pushNotification('Withdrawal submitted', `Demo withdrawal of ${fmtUSD(amount)} (ID: ${txId}) is pending.`);
-  showToast('Withdrawal submitted', `Confirmation ID ${txId} — status: Pending.`);
-  return false;
-}
-
-/* ---------------------------- Settings ---------------------------- */
-function toggleTheme(){
-  const dark = document.getElementById('darkModeToggle').checked;
-  const theme = dark ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('bitnova_theme', theme);
-  saveSettingsField('theme', theme);
-}
-function saveSettingsField(key, value){
-  if(!state) return;
-  updateCurrentUser(u=>{ u.settings[key] = value; });
-  state = getCurrentUserData();
-  showToast('Settings saved', 'Your preference has been updated.');
-}
-
-/* ---------------------------- Price Chart (canvas) ---------------------------- */
-const TIMEFRAMES = ['1H','1D','1W','1M','1Y'];
-function buildChartTabs(){
-  document.getElementById('chartTabs').innerHTML = TIMEFRAMES.map(tf=>`<button data-tf="${tf}" class="${tf===chartTimeframe?'active':''}" onclick="setTimeframe('${tf}')">${tf}</button>`).join('');
-}
-function setTimeframe(tf){
-  chartTimeframe = tf;
-  document.querySelectorAll('#chartTabs button').forEach(b=>b.classList.toggle('active', b.dataset.tf===tf));
-  renderChart();
-}
-function seededRandom(seed){
-  let s = seed % 2147483647;
-  if(s<=0) s += 2147483646;
-  return function(){ s = s * 16807 % 2147483647; return (s-1)/2147483646; };
-}
-function generateSeries(coin, timeframe){
-  const key = coin.id+timeframe;
-  if(chartSeeds[key]) return chartSeeds[key];
-  const points = 60;
-  let seed = 0; for(let i=0;i<coin.id.length;i++) seed += coin.id.charCodeAt(i)*(i+1);
-  seed += timeframe.length*97;
-  const rand = seededRandom(seed+1);
-  const volatilityByTF = {'1H':0.002,'1D':0.01,'1W':0.03,'1M':0.08,'1Y':0.25};
-  const vol = volatilityByTF[timeframe] || 0.02;
-  let price = coin.price * (1 - vol/2);
-  const series = [];
-  for(let i=0;i<points;i++){
-    const drift = (rand()-0.48) * vol * coin.price * 0.1;
-    price = Math.max(price + drift, coin.price*0.5);
-    series.push(price);
-  }
-  series[series.length-1] = coin.price; // end at current price
-  chartSeeds[key] = series;
-  return series;
-}
-function renderChart(){
-  if(!state) return;
-  const coin = currentTradeCoin();
-  document.getElementById('tradeCoinPrice').textContent = fmtUSD(coin.price);
-  buildChartTabs();
-  const canvas = document.getElementById('priceChart');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  const w = rect.width || 600, h = 260;
-  canvas.width = w*dpr; canvas.height = h*dpr;
-  ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,w,h);
-
-  const series = generateSeries(coin, chartTimeframe);
-  const min = Math.min(...series), max = Math.max(...series);
-  const pad = 16;
-  const styles = getComputedStyle(document.documentElement);
-  const up = series[series.length-1] >= series[0];
-  const lineColor = up ? styles.getPropertyValue('--green').trim() : styles.getPropertyValue('--red').trim();
-
-  ctx.beginPath();
-  series.forEach((p,i)=>{
-    const x = pad + (i/(series.length-1)) * (w-pad*2);
-    const y = h-pad - ((p-min)/((max-min)||1)) * (h-pad*2);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  ctx.stroke();
-
-  // gradient fill under line
-  const last = series.length-1;
-  const lastX = pad + (last/(series.length-1)) * (w-pad*2);
-  ctx.lineTo(lastX, h-pad);
-  ctx.lineTo(pad, h-pad);
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(0,0,0,h);
-  grad.addColorStop(0, hexToRgba(lineColor, 0.28));
-  grad.addColorStop(1, hexToRgba(lineColor, 0));
-  ctx.fillStyle = grad;
-  ctx.fill();
-}
-function hexToRgba(color, alpha){
-  color = color.trim();
-  if(color.startsWith('#')){
-    const bigint = parseInt(color.slice(1),16);
-    const r=(bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
-  return color;
-}
-window.addEventListener('resize', ()=>{ if(currentView==='trade' && state) renderChart(); });
-
-/* ---------------------------- Admin ---------------------------- */
-function renderAdmin(){
-  const db = loadDB();
-  const users = Object.values(db.users);
-  document.getElementById('a-users').textContent = users.length;
-  let totalDep=0, totalWd=0, volume=0;
-  const allTx = [];
-  users.forEach(u=>{
-    totalDep += u.balance.totalDeposits || 0;
-    totalWd += u.balance.totalWithdrawals || 0;
-    (u.transactions||[]).forEach(t=>{
-      if(t.type==='Buy'||t.type==='Sell') volume += t.amount;
-      allTx.push(Object.assign({}, t, {owner:u.profile.email}));
-    });
-  });
-  document.getElementById('a-deposits').textContent = fmtUSD(totalDep);
-  document.getElementById('a-withdrawals').textContent = fmtUSD(totalWd);
-  document.getElementById('a-volume').textContent = fmtUSD(volume);
-
-  document.getElementById('adminUsersBody').innerHTML = users.map(u=>`<tr>
-    <td>${u.profile.acctId}</td>
-    <td>${escapeHtml(u.profile.name)}</td>
-    <td>${escapeHtml(u.profile.email)}</td>
-    <td>${fmtUSD(u.balance.cash)}</td>
-    <td style="text-align:right;">
-      <button class="btn btn-ghost btn-sm" onclick="adminAdjustBalance('${u.profile.email}')">Adjust</button>
-    </td>
-  </tr>`).join('') || emptyRow(5);
-
-  allTx.sort((a,b)=>b.date-a.date);
-  document.getElementById('adminTxBody').innerHTML = allTx.slice(0,50).map(t=>`<tr>
-    <td>${t.id}</td><td>${fmtDate(t.date)}</td><td>${t.type}</td><td>${t.asset}</td><td>${fmtUSD(t.amount)}</td>
-    <td><span class="status-tag status-${t.status}">${t.status}</span></td>
-    <td style="text-align:right;">
-      <select onchange="adminChangeStatus('${t.owner}','${t.id}', this.value)">
-        <option value="">Change...</option>
-        <option>Completed</option><option>Pending</option><option>Failed</option>
-      </select>
-    </td>
-  </tr>`).join('') || emptyRow(7);
-}
-function adminAdjustBalance(email){
-  const amountStr = prompt('Enter amount to ADD to this demo user\'s balance (use a negative number to subtract):', '0');
-  if(amountStr === null) return;
-  const amount = parseFloat(amountStr);
-  if(isNaN(amount)) { alert('Please enter a valid number.'); return; }
-  const db = loadDB();
-  const u = db.users[email];
-  if(!u) return;
-  u.balance.cash += amount;
-  u.notifications.unshift({id:genId('NOTIF'), title:'Security notification', body:`An admin adjusted your demo balance by ${fmtUSD(amount)}.`, time:Date.now(), read:false});
-  saveDB(db);
-  renderAdmin();
-  showToast('Balance adjusted', `${email}: ${amount>=0?'+':''}${fmtUSD(amount)}`);
-}
-function adminChangeStatus(email, txId, newStatus){
-  if(!newStatus) return;
-  const db = loadDB();
-  const u = db.users[email];
-  if(!u) return;
-  const tx = u.transactions.find(t=>t.id===txId);
-  if(tx) tx.status = newStatus;
-  saveDB(db);
-  renderAdmin();
-  showToast('Status updated', `${txId} marked as ${newStatus}`);
-}
-
-/* ---------------------------- Withdraw hint refresh ---------------------------- */
-const origNavigate = navigate;
-navigate = function(viewId){
-  origNavigate(viewId);
-  if(viewId==='withdraw') updateWithdrawHint();
-};
 </script>
 </body>
 </html>
