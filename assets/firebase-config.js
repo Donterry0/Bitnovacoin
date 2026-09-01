@@ -11,12 +11,11 @@
  * deploy the security rules for your own Firebase project.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyADopRUWeNbrev-wb316uUQiAPq88OYlnQ",
-  authDomain: "okyinv.firebaseapp.com",
-  databaseURL: "https://okyinv-default-rtdb.firebaseio.com",
-  projectId: "okyinv",
-  storageBucket: "okyinv.firebasestorage.app",
-  messagingSenderId: "331299209811",
-  appId: "1:331299209811:web:1fd8ce45c0d6662af7fca6",
-  measurementId: "G-DS9HL01YZJ"
+  apiKey: "AIzaSyDAsbxxOhXADtc9ml2B6EoDkB-lQpHpKEo",
+  authDomain: "transnova-tickets.firebaseapp.com",
+  projectId: "transnova-tickets",
+  storageBucket: "transnova-tickets.firebasestorage.app",
+  messagingSenderId: "549908096481",
+  appId: "1:549908096481:web:d2d4e58d9ae9e8aac79ea0",
+  measurementId: "G-CGMD060V0J"
 };
