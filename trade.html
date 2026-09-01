@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trade — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Trade</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="demo-banner">🧪 <div><strong>Demo Trading:</strong> Orders are simulated — no real crypto is bought or sold.</div></div>
+        <div class="trade-layout">
+          <div class="card">
+            <div class="coin-select-row">
+              <select id="tradeCoin"></select>
+              <div class="price-live" id="tradeCoinPrice">$0.00</div>
+            </div>
+            <div class="chart-tabs" id="chartTabs"></div>
+            <canvas id="priceChart" width="600" height="260"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:10px;">Place Demo Order</h3>
+            <div class="segmented">
+              <button type="button" class="active buy" id="segBuy" onclick="setOrderSide('buy')">Buy</button>
+              <button type="button" class="sell" id="segSell" onclick="setOrderSide('sell')">Sell</button>
+            </div>
+            <form onsubmit="return submitOrder(event)">
+              <div class="field">
+                <label>Amount (USD)</label>
+                <input type="number" id="orderAmount" placeholder="0.00" min="0" step="0.01" oninput="updateOrderSummary()">
+                <small class="err">Enter a valid amount.</small>
+              </div>
+              <div class="order-summary">
+                <div><span>Coin price</span><span id="os-price">$0.00</span></div>
+                <div><span>Est. quantity</span><span id="os-qty">0</span></div>
+                <div><span>Fee (demo, 0.1%)</span><span id="os-fee">$0.00</span></div>
+                <div class="total"><span>Total</span><span id="os-total">$0.00</span></div>
+              </div>
+              <button type="submit" class="btn btn-buy btn-block" id="orderSubmitBtn">Buy (Demo)</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('trade');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+
+let bnUid = null, bnData = null, orderSide = 'buy', chartTimeframe = '1D';
+
+document.getElementById('tradeCoin').innerHTML = BN_COINS.map((c) => `<option value="${c.id}">${c.name} (${c.id})</option>`).join('');
+const presetCoin = sessionStorage.getItem('bn_trade_coin');
+const presetSide = sessionStorage.getItem('bn_trade_side');
+if (presetCoin) { document.getElementById('tradeCoin').value = presetCoin; sessionStorage.removeItem('bn_trade_coin'); }
+if (presetSide) { sessionStorage.removeItem('bn_trade_side'); }
+
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    bnData = snap.val();
+    if (!bnData) return;
+    bnApplyTheme(bnData.settings && bnData.settings.theme);
+    bnSetAvatarInitials(bnData.profile.name);
+    updateOrderSummary();
+  });
+  buildChartTabs();
+  renderChart();
+  if (presetSide) setOrderSide(presetSide);
+});
+
+document.getElementById('tradeCoin').addEventListener('change', () => { renderChart(); updateOrderSummary(); });
+window.addEventListener('resize', () => renderChart());
+
+function currentTradeCoin() {
+  const id = document.getElementById('tradeCoin').value;
+  return BN_COINS.find((c) => c.id === id) || BN_COINS[0];
+}
+function buildChartTabs() {
+  document.getElementById('chartTabs').innerHTML = BN_TIMEFRAMES.map((tf) => `<button data-tf="${tf}" class="${tf === chartTimeframe ? 'active' : ''}" onclick="setTimeframe('${tf}')">${tf}</button>`).join('');
+}
+function setTimeframe(tf) {
+  chartTimeframe = tf;
+  document.querySelectorAll('#chartTabs button').forEach((b) => b.classList.toggle('active', b.dataset.tf === tf));
+  renderChart();
+}
+function renderChart() {
+  const coin = currentTradeCoin();
+  document.getElementById('tradeCoinPrice').textContent = bnFmtUSD(coin.price);
+  buildChartTabs();
+  bnRenderChart(document.getElementById('priceChart'), coin, chartTimeframe);
+}
+function setOrderSide(side) {
+  orderSide = side;
+  document.getElementById('segBuy').classList.toggle('active', side === 'buy');
+  document.getElementById('segSell').classList.toggle('active', side === 'sell');
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.textContent = (side === 'buy' ? 'Buy' : 'Sell') + ' (Demo)';
+  btn.className = 'btn btn-block ' + (side === 'buy' ? 'btn-buy' : 'btn-sell');
+  updateOrderSummary();
+}
+function updateOrderSummary() {
+  const coin = currentTradeCoin();
+  document.getElementById('tradeCoinPrice').textContent = bnFmtUSD(coin.price);
+  const amount = parseFloat(document.getElementById('orderAmount').value) || 0;
+  const qty = amount > 0 ? amount / coin.price : 0;
+  const fee = amount * 0.001;
+  document.getElementById('os-price').textContent = bnFmtUSD(coin.price);
+  document.getElementById('os-qty').textContent = bnFmtQty(qty) + ' ' + coin.id;
+  document.getElementById('os-fee').textContent = bnFmtUSD(fee);
+  document.getElementById('os-total').textContent = bnFmtUSD(amount + (orderSide === 'buy' ? fee : -fee));
+}
+async function submitOrder(ev) {
+  ev.preventDefault();
+  if (!bnData) return false;
+  const amountInput = document.getElementById('orderAmount');
+  const fieldWrap = amountInput.closest('.field');
+  fieldWrap.classList.remove('invalid');
+  const coin = currentTradeCoin();
+  const amount = parseFloat(amountInput.value);
+  if (!amount || amount <= 0) { fieldWrap.classList.add('invalid'); fieldWrap.querySelector('small.err').textContent = 'Enter a valid amount.'; return false; }
+  const fee = amount * 0.001;
+  const qty = amount / coin.price;
+  const holdings = bnData.holdings || {};
+
+  if (orderSide === 'buy') {
+    const totalCost = amount + fee;
+    if (totalCost > bnData.balance.cash) {
+      fieldWrap.classList.add('invalid');
+      fieldWrap.querySelector('small.err').textContent = 'Insufficient demo balance for this order.';
+      return false;
+    }
+    const h = holdings[coin.id] || { qty: 0, costBasis: 0 };
+    const updates = {};
+    updates[`users/${bnUid}/balance/cash`] = bnData.balance.cash - totalCost;
+    updates[`users/${bnUid}/holdings/${coin.id}/qty`] = h.qty + qty;
+    updates[`users/${bnUid}/holdings/${coin.id}/costBasis`] = h.costBasis + amount;
+    const txId = BN.genId('TRX');
+    updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Buy', asset: coin.id, amount, status: 'Completed' };
+    await BN.db.ref().update(updates);
+    bnPushNotification(bnUid, 'Trade executed', `Bought ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)} (demo).`, bnData.settings.notifications);
+    bnShowToast('Order filled', `Bought ${bnFmtQty(qty)} ${coin.id}.`);
+  } else {
+    const h = holdings[coin.id] || { qty: 0, costBasis: 0 };
+    if (qty > h.qty) {
+      fieldWrap.classList.add('invalid');
+      fieldWrap.querySelector('small.err').textContent = `You only hold ${bnFmtQty(h.qty)} ${coin.id}.`;
+      return false;
+    }
+    const proceeds = amount - fee;
+    const avgCost = h.qty > 0 ? h.costBasis / h.qty : 0;
+    const newQty = Math.max(h.qty - qty, 0);
+    const newCostBasis = newQty < 1e-9 ? 0 : h.costBasis - avgCost * qty;
+    const updates = {};
+    updates[`users/${bnUid}/balance/cash`] = bnData.balance.cash + proceeds;
+    updates[`users/${bnUid}/holdings/${coin.id}/qty`] = newQty < 1e-9 ? 0 : newQty;
+    updates[`users/${bnUid}/holdings/${coin.id}/costBasis`] = newCostBasis;
+    const txId = BN.genId('TRX');
+    updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Sell', asset: coin.id, amount, status: 'Completed' };
+    await BN.db.ref().update(updates);
+    bnPushNotification(bnUid, 'Trade executed', `Sold ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)} (demo).`, bnData.settings.notifications);
+    bnShowToast('Order filled', `Sold ${bnFmtQty(qty)} ${coin.id}.`);
+  }
+  amountInput.value = '';
+  updateOrderSummary();
+  return false;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Markets — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot"><div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div></div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Markets</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="view active">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Coin</th><th>Symbol</th><th>Price</th><th>24h Change</th><th style="text-align:right;">Action</th></tr></thead>
+            <tbody id="marketsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('markets');
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+BN.requireAuth(async (user) => {
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(user.uid);
+  BN.userRef(user.uid).on('value', (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    bnApplyTheme(data.settings && data.settings.theme);
+    bnSetAvatarInitials(data.profile.name);
+  });
+  renderMarkets();
+});
+function quickTrade(coinId, side) {
+  sessionStorage.setItem('bn_trade_coin', coinId);
+  sessionStorage.setItem('bn_trade_side', side);
+  location.href = 'trade.html';
+}
+function renderMarkets() {
+  document.getElementById('marketsBody').innerHTML = BN_COINS.map((c) => {
+    const up = c.change24h >= 0;
+    return `<tr>
+      <td><div class="coin-name"><span class="coin-ic" style="background:${c.color}">${c.id.substring(0, 1)}</span> ${c.name}</div></td>
+      <td>${c.id}</td>
+      <td>${bnFmtUSD(c.price)}</td>
+      <td><span class="pill ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${Math.abs(c.change24h).toFixed(2)}%</span></td>
+      <td style="text-align:right;">
+        <button class="btn btn-buy btn-sm" onclick="quickTrade('${c.id}','buy')">Buy</button>
+        <button class="btn btn-sell btn-sm" onclick="quickTrade('${c.id}','sell')">Sell</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

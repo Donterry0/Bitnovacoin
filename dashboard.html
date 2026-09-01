@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dashboard — BitNova</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div id="app" class="active">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
+    <ul class="nav-list" id="sidebarNav"></ul>
+    <div class="sidebar-foot">
+      <div class="nav-item" onclick="bnLogout()"><span class="ic">↩</span> Log Out</div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="topbar">
+      <h1 id="viewTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" title="Notifications">🔔<span class="badge-dot hidden" id="notifBadge">0</span></button>
+        <div class="avatar" id="topAvatar" onclick="location.href='profile.html'" title="Profile">U</div>
+      </div>
+      <div class="dropdown" id="notifDropdown">
+        <div class="dropdown-head"><span>Notifications</span><a id="notifClear">Clear all</a></div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="view active">
+        <div class="demo-banner">🧪 <div><strong>Demo Mode:</strong> All balances and activity below are simulated. No real funds are involved.</div></div>
+        <div class="grid grid-4">
+          <div class="card"><h3>Total Balance</h3><div class="big" id="d-total">$0.00</div><div class="sub">Cash + holdings</div></div>
+          <div class="card"><h3>Available Balance</h3><div class="big" id="d-available">$0.00</div><div class="sub">Ready to trade / withdraw</div></div>
+          <div class="card"><h3>Today's P/L</h3><div class="big" id="d-pl">$0.00</div><div class="sub" id="d-pl-pct">0.00%</div></div>
+          <div class="card"><h3>Portfolio Value</h3><div class="big" id="d-portfolio">$0.00</div><div class="sub">Crypto holdings</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px;">
+          <div class="card"><h3>Total Deposits</h3><div class="big" id="d-deposits">$0.00</div><div class="sub">Lifetime demo deposits</div></div>
+          <div class="card"><h3>Total Withdrawals</h3><div class="big" id="d-withdrawals">$0.00</div><div class="sub">Lifetime demo withdrawals</div></div>
+        </div>
+
+        <h2 class="section-title">Market Snapshot</h2>
+        <div class="table-wrap">
+          <table><thead><tr><th>Coin</th><th>Price</th><th>24h</th></tr></thead><tbody id="dashMarketBody"></tbody></table>
+        </div>
+
+        <h2 class="section-title">Recent Transactions</h2>
+        <div class="table-wrap">
+          <table><thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Asset</th><th>Amount</th><th>Status</th></tr></thead><tbody id="dashTxBody"></tbody></table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav"><ul id="bottomNavList"></ul></nav>
+<div id="toastWrap"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/firebase.js"></script>
+<script src="assets/app.js"></script>
+<script>
+bnBuildNav('dashboard');
+let bnUid = null;
+let bnData = null;
+
+function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
+
+BN.requireAuth(async (user) => {
+  bnUid = user.uid;
+  await BN.ensureUserRecord(user);
+  bnWireNotifications(bnUid);
+  BN.userRef(bnUid).on('value', (snap) => {
+    bnData = snap.val();
+    if (!bnData) return;
+    bnApplyTheme(bnData.settings && bnData.settings.theme);
+    bnSetAvatarInitials(bnData.profile.name);
+    renderDashboard();
+  });
+});
+
+function computePortfolioValue(holdings) {
+  let total = 0;
+  for (const cid in holdings || {}) {
+    const h = holdings[cid];
+    const coin = BN_COINS.find((c) => c.id === cid);
+    if (coin && h.qty > 0) total += h.qty * coin.price;
+  }
+  return total;
+}
+
+function renderDashboard() {
+  const portfolioVal = computePortfolioValue(bnData.holdings);
+  const total = bnData.balance.cash + portfolioVal;
+  document.getElementById('d-total').textContent = bnFmtUSD(total);
+  document.getElementById('d-available').textContent = bnFmtUSD(bnData.balance.cash);
+  document.getElementById('d-portfolio').textContent = bnFmtUSD(portfolioVal);
+  document.getElementById('d-deposits').textContent = bnFmtUSD(bnData.balance.totalDeposits);
+  document.getElementById('d-withdrawals').textContent = bnFmtUSD(bnData.balance.totalWithdrawals);
+
+  let pl = 0;
+  for (const cid in bnData.holdings || {}) {
+    const h = bnData.holdings[cid];
+    const coin = BN_COINS.find((c) => c.id === cid);
+    if (coin) pl += h.qty * coin.price * (coin.change24h / 100);
+  }
+  const plPct = total > 0 ? (pl / total) * 100 : 0;
+  const plEl = document.getElementById('d-pl');
+  plEl.textContent = (pl >= 0 ? '+' : '') + bnFmtUSD(pl);
+  plEl.style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
+  const plPctEl = document.getElementById('d-pl-pct');
+  plPctEl.textContent = (pl >= 0 ? '+' : '') + plPct.toFixed(2) + '%';
+  plPctEl.style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('dashMarketBody').innerHTML = BN_COINS.slice(0, 5).map(coinRowHtml).join('');
+
+  const txs = Object.entries(bnData.transactions || {}).map(([id, t]) => ({ id, ...t })).sort((a, b) => b.date - a.date).slice(0, 5);
+  document.getElementById('dashTxBody').innerHTML = txs.map(txRowHtml).join('') || bnEmptyRow(6);
+}
+function coinRowHtml(c) {
+  const up = c.change24h >= 0;
+  return `<tr><td><div class="coin-name"><span class="coin-ic" style="background:${c.color}">${c.id.substring(0, 1)}</span> ${c.name} <span style="color:var(--text-faint);font-weight:500;">${c.id}</span></div></td><td>${bnFmtUSD(c.price)}</td><td><span class="pill ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${Math.abs(c.change24h).toFixed(2)}%</span></td></tr>`;
+}
+function txRowHtml(t) {
+  const signed = t.type === 'Withdrawal' || t.type === 'Buy' ? '-' : t.type === 'Deposit' || t.type === 'Sell' ? '+' : '';
+  return `<tr><td>${bnEscapeHtml(t.txId || t.id)}</td><td>${bnFmtDate(t.date)}</td><td>${bnEscapeHtml(t.type)}</td><td>${bnEscapeHtml(t.asset)}</td><td>${signed}${bnFmtUSD(t.amount)}</td><td><span class="status-tag status-${bnEscapeHtml(t.status)}">${bnEscapeHtml(t.status)}</span></td></tr>`;
+}
+</script>
+</body>
+</html>
