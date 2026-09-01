@@ -93,11 +93,15 @@ function bnBuildNav(activeView) {
       (n) => `<li class="nav-item${n.id === activeView ? ' active' : ''}" onclick="location.href='${n.href}'"><span class="ic">${n.icon}</span> ${n.label}</li>`
     ).join('');
   }
-  if (bottomList) {
-    bottomList.innerHTML = BN_NAV_ITEMS.map(
+  const lists = document.querySelectorAll('#bottomNavList, #categoryNavList, #topNavList, .category-nav ul, .top-nav ul, .bottom-nav ul');
+  const seen = new Set();
+  lists.forEach((list) => {
+    if (seen.has(list)) return;
+    seen.add(list);
+    list.innerHTML = BN_NAV_ITEMS.map(
       (n) => `<li class="${n.id === activeView ? 'active' : ''}" onclick="location.href='${n.href}'"><span class="ic">${n.icon}</span>${n.label}</li>`
     ).join('');
-  }
+  });
   const title = document.getElementById('viewTitle');
   if (title) {
     const item = BN_NAV_ITEMS.find((n) => n.id === activeView);
