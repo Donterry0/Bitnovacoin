@@ -143,6 +143,7 @@ async function submitOrder(ev) {
   ev.preventDefault();
   if (!bnData) return false;
   if (!bnRequireKyc(bnData.kycLevel)) return false;
+  if (bnCheckRestricted(bnData)) return false;
   const amountInput = document.getElementById('orderAmount');
   const fieldWrap = amountInput.closest('.field');
   fieldWrap.classList.remove('invalid');

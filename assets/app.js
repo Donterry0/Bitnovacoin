@@ -161,6 +161,15 @@ function bnRequireKyc(kycLevel) {
   return false;
 }
 
+/* ---------------------------- Restricted account gate ---------------------------- */
+function bnCheckRestricted(userData) {
+  if (userData && userData.restricted === true) {
+    bnShowToast('Account restricted', 'Your account has been restricted. Please contact support.', true);
+    return true;
+  }
+  return false;
+}
+
 /* ---------------------------- Notifications dropdown ---------------------------- */
 function bnWireNotifications(uid) {
   const btn = document.getElementById('notifBtn');

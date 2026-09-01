@@ -30,7 +30,7 @@
         </div>
         <h2 class="section-title">Users</h2>
         <div class="table-wrap">
-          <table><thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th>KYC Level</th><th style="text-align:right;">Adjust Balance</th></tr></thead><tbody id="adminUsersBody"></tbody></table>
+          <table><thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th>KYC Level</th><th>Status</th><th style="text-align:right;">Adjust Balance</th><th style="text-align:right;">Restrict</th></tr></thead><tbody id="adminUsersBody"></tbody></table>
         </div>
         <h2 class="section-title">All Transactions</h2>
         <div class="table-wrap">
@@ -92,8 +92,10 @@ function renderAdmin(users) {
         <option value="1" ${(u.kycLevel || 0) >= 1 ? 'selected' : ''}>Level 1 (Verified)</option>
       </select>
     </td>
+    <td><span class="status-tag ${u.restricted ? 'status-Failed' : 'status-Completed'}">${u.restricted ? 'Restricted' : 'Active'}</span></td>
     <td style="text-align:right;"><button class="btn btn-ghost btn-sm" data-adjust-uid="${bnEscapeHtml(u.uid)}">Adjust</button></td>
-  </tr>`).join('') || bnEmptyRow(6);
+    <td style="text-align:right;"><button class="btn btn-ghost btn-sm" data-restrict-uid="${bnEscapeHtml(u.uid)}" data-restricted="${u.restricted ? '1' : '0'}">${u.restricted ? 'Unrestrict' : 'Restrict'}</button></td>
+  </tr>`).join('') || bnEmptyRow(8);
 
   allTx.sort((a, b) => b.date - a.date);
   document.getElementById('adminTxBody').innerHTML = allTx.slice(0, 50).map((t) => `<tr>
@@ -113,6 +115,8 @@ function renderAdmin(users) {
 document.getElementById('adminUsersBody').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-adjust-uid]');
   if (btn) adminAdjustBalance(btn.dataset.adjustUid);
+  const restrictBtn = e.target.closest('[data-restrict-uid]');
+  if (restrictBtn) adminToggleRestrict(restrictBtn.dataset.restrictUid, restrictBtn.dataset.restricted === '1');
 });
 document.getElementById('adminUsersBody').addEventListener('change', (e) => {
   const sel = e.target.closest('[data-kyc-uid]');
@@ -146,6 +150,20 @@ async function adminChangeStatus(uid, txKey, newStatus) {
   if (!newStatus) return;
   await BN.userRef(uid, `transactions/${txKey}/status`).set(newStatus);
   bnShowToast('Status updated', `Transaction marked as ${newStatus}`);
+}
+async function adminToggleRestrict(uid, isCurrentlyRestricted) {
+  const nextRestricted = !isCurrentlyRestricted;
+  if (!confirm(nextRestricted ? 'Restrict this user? They will be signed out and unable to log in, trade, deposit or withdraw.' : 'Remove the restriction on this user?')) return;
+  await BN.userRef(uid, 'restricted').set(nextRestricted);
+  BN.userRef(uid, 'notifications').push({
+    title: nextRestricted ? 'Account restricted' : 'Account restriction lifted',
+    body: nextRestricted
+      ? 'Your account has been restricted. Please contact support.'
+      : 'Your account restriction has been lifted. You can now use your account normally.',
+    time: Date.now(),
+    read: false,
+  });
+  bnShowToast(nextRestricted ? 'User restricted' : 'User unrestricted', nextRestricted ? 'The user has been restricted.' : 'The restriction was removed.');
 }
 </script>
 </body>

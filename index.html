@@ -114,6 +114,12 @@
 <script>
 bnApplyTheme(localStorage.getItem('bitnova_theme') || 'dark');
 
+const bnRestrictedMsg = sessionStorage.getItem('bn_restricted_msg');
+if (bnRestrictedMsg) {
+  sessionStorage.removeItem('bn_restricted_msg');
+  bnShowToast('Account restricted', bnRestrictedMsg, true);
+}
+
 // If already signed in, skip straight to the dashboard.
 BN.auth.onAuthStateChanged((user) => {
   if (user) location.href = 'dashboard.html';
@@ -254,7 +260,7 @@ async function handleAdminCreate(ev) {
   try {
     const cred = await BN.auth.createUserWithEmailAndPassword(email, pass);
     await cred.user.updateProfile({ displayName: name });
-    await BN.userRef(cred.user.uid).set(BN.defaultUserRecord(name, email));
+    await BN.userRef(cred.user.uid).set(BN.defaultUserRecord(name, email, true));
     await BN.db.ref(`admins/${cred.user.uid}`).set(true);
     location.href = 'admin.html';
   } catch (err) {
