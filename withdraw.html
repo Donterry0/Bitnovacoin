@@ -31,20 +31,24 @@
           <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Withdraw Funds</h3>
           <form onsubmit="return submitWithdrawal(event)">
             <div class="field">
+              <label>Coin</label>
+              <select id="wdCoin"></select>
+            </div>
+            <div class="field">
+              <label>Network</label>
+              <div class="addr-box" id="wdNetwork">—</div>
+            </div>
+            <div class="field">
               <label>Amount <span class="help-text" id="wAvailHint"></span></label>
               <input type="number" id="wdAmount" min="0" step="0.01" placeholder="0.00">
               <small class="err" id="wdAmountErr">Enter a valid amount within your available balance.</small>
-            </div>
-            <div class="field">
-              <label>Currency</label>
-              <select id="wdCurrency"><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
             </div>
             <div class="field">
               <label>Withdrawal method</label>
               <select id="wdMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto Wallet</option></select>
             </div>
             <div class="field">
-              <label>Destination / account</label>
+              <label>Destination wallet address</label>
               <input type="text" id="wdDestination" placeholder="Account number or wallet address">
               <small class="err">Destination is required.</small>
             </div>
@@ -67,6 +71,14 @@
 bnBuildNav('withdraw');
 function bnLogout() { BN.auth.signOut().then(() => location.href = 'index.html'); }
 let bnUid = null, bnData = null;
+
+document.getElementById('wdCoin').innerHTML = BN_COINS.map((c) => `<option value="${c.id}">${c.name} (${c.id})</option>`).join('');
+function refreshWithdrawCoin() {
+  document.getElementById('wdNetwork').textContent = bnCoinNetwork(document.getElementById('wdCoin').value);
+}
+document.getElementById('wdCoin').addEventListener('change', refreshWithdrawCoin);
+refreshWithdrawCoin();
+
 BN.requireAuth(async (user) => {
   bnUid = user.uid;
   await BN.ensureUserRecord(user);
@@ -82,11 +94,12 @@ BN.requireAuth(async (user) => {
 async function submitWithdrawal(ev) {
   ev.preventDefault();
   if (!bnData) return false;
+  if (!bnRequireKyc(bnData.kycLevel)) return false;
   const amtField = document.getElementById('wdAmount').closest('.field');
   const destField = document.getElementById('wdDestination').closest('.field');
   amtField.classList.remove('invalid'); destField.classList.remove('invalid');
   const amount = parseFloat(document.getElementById('wdAmount').value);
-  const currency = document.getElementById('wdCurrency').value;
+  const coinId = document.getElementById('wdCoin').value;
   const method = document.getElementById('wdMethod').value;
   const destination = document.getElementById('wdDestination').value.trim();
   let valid = true;
@@ -99,7 +112,7 @@ async function submitWithdrawal(ev) {
   const updates = {};
   updates[`users/${bnUid}/balance/cash`] = bnData.balance.cash - amount;
   updates[`users/${bnUid}/balance/totalWithdrawals`] = bnData.balance.totalWithdrawals + amount;
-  updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Withdrawal', asset: currency, amount, status: 'Pending', method, destination };
+  updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Withdrawal', asset: coinId, coin: coinId, amount, status: 'Pending', method, destination };
   await BN.db.ref().update(updates);
   document.getElementById('wdAmount').value = '';
   document.getElementById('wdDestination').value = '';

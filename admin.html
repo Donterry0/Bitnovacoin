@@ -30,7 +30,7 @@
         </div>
         <h2 class="section-title">Users</h2>
         <div class="table-wrap">
-          <table><thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th style="text-align:right;">Adjust Balance</th></tr></thead><tbody id="adminUsersBody"></tbody></table>
+          <table><thead><tr><th>Account ID</th><th>Name</th><th>Email</th><th>Balance</th><th>KYC Level</th><th style="text-align:right;">Adjust Balance</th></tr></thead><tbody id="adminUsersBody"></tbody></table>
         </div>
         <h2 class="section-title">All Transactions</h2>
         <div class="table-wrap">
@@ -86,8 +86,14 @@ function renderAdmin(users) {
     <td>${bnEscapeHtml(u.profile ? u.profile.name : '')}</td>
     <td>${bnEscapeHtml(u.profile ? u.profile.email : '')}</td>
     <td>${bnFmtUSD(u.balance ? u.balance.cash : 0)}</td>
+    <td>
+      <select data-kyc-uid="${bnEscapeHtml(u.uid)}">
+        <option value="0" ${(u.kycLevel || 0) === 0 ? 'selected' : ''}>Level 0 (Unverified)</option>
+        <option value="1" ${(u.kycLevel || 0) >= 1 ? 'selected' : ''}>Level 1 (Verified)</option>
+      </select>
+    </td>
     <td style="text-align:right;"><button class="btn btn-ghost btn-sm" data-adjust-uid="${bnEscapeHtml(u.uid)}">Adjust</button></td>
-  </tr>`).join('') || bnEmptyRow(5);
+  </tr>`).join('') || bnEmptyRow(6);
 
   allTx.sort((a, b) => b.date - a.date);
   document.getElementById('adminTxBody').innerHTML = allTx.slice(0, 50).map((t) => `<tr>
@@ -108,10 +114,21 @@ document.getElementById('adminUsersBody').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-adjust-uid]');
   if (btn) adminAdjustBalance(btn.dataset.adjustUid);
 });
+document.getElementById('adminUsersBody').addEventListener('change', (e) => {
+  const sel = e.target.closest('[data-kyc-uid]');
+  if (sel) adminChangeKyc(sel.dataset.kycUid, sel.value);
+});
 document.getElementById('adminTxBody').addEventListener('change', (e) => {
   const sel = e.target.closest('[data-status-uid]');
   if (sel) adminChangeStatus(sel.dataset.statusUid, sel.dataset.statusTxkey, sel.value);
 });
+
+async function adminChangeKyc(uid, levelStr) {
+  const level = parseInt(levelStr, 10) || 0;
+  await BN.userRef(uid, 'kycLevel').set(level);
+  BN.userRef(uid, 'notifications').push({ title: 'Verification updated', body: `Your KYC level was updated to Level ${level}.`, time: Date.now(), read: false });
+  bnShowToast('KYC level updated', `User set to Level ${level}.`);
+}
 
 async function adminAdjustBalance(uid) {
   const amountStr = prompt("Enter amount to ADD to this user's balance (use a negative number to subtract):", '0');
