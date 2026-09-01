@@ -53,9 +53,15 @@
   <div class="modal">
     <div class="modal-head"><h2>Admin Login</h2><button onclick="closeModal('adminLoginOverlay')">✕</button></div>
     <p class="help-text">Admin access is granted only to accounts that a project owner has manually added to the
-      <code>admins</code> node in the Firebase Realtime Database. This grants access to the
-      <strong>Admin Panel</strong>.</p>
-    <form onsubmit="return handleAdminLogin(event)">
+      <code>admins</code> node in the Firebase Realtime Database, or created here with a valid access code. This
+      grants access to the <strong>Admin Panel</strong>.</p>
+
+    <div class="auth-tabs">
+      <button id="adminTabLogin" class="active" onclick="setAdminTab('login')">Login</button>
+      <button id="adminTabCreate" onclick="setAdminTab('create')">Create Admin Account</button>
+    </div>
+
+    <form id="adminLoginForm" onsubmit="return handleAdminLogin(event)">
       <div class="field">
         <label>Admin email</label>
         <input type="email" id="adminUser" placeholder="admin@example.com" autocomplete="off">
@@ -69,6 +75,30 @@
         <input type="password" id="adminCode" placeholder="Enter access code" autocomplete="off">
       </div>
       <button type="submit" class="btn btn-primary btn-block">Enter Admin Panel</button>
+    </form>
+
+    <form id="adminCreateForm" style="display:none;" onsubmit="return handleAdminCreate(event)">
+      <div class="field" id="adminCreateNameField">
+        <label>Full name</label>
+        <input type="text" id="adminCreateName" placeholder="Jane Admin" autocomplete="name">
+        <small class="err">Please enter your name.</small>
+      </div>
+      <div class="field" id="adminCreateEmailField">
+        <label>Email</label>
+        <input type="email" id="adminCreateEmail" placeholder="admin@example.com" autocomplete="off">
+        <small class="err">Please enter a valid email address.</small>
+      </div>
+      <div class="field" id="adminCreatePassField">
+        <label>Password</label>
+        <input type="password" id="adminCreatePass" placeholder="••••••••" autocomplete="new-password">
+        <small class="err">Password must be at least 6 characters.</small>
+      </div>
+      <div class="field" id="adminCreateCodeField">
+        <label>Access code</label>
+        <input type="password" id="adminCreateCode" placeholder="Enter access code" autocomplete="off">
+        <small class="err">Please enter the access code.</small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="adminCreateBtn">Create Admin Account</button>
     </form>
   </div>
 </div>
@@ -163,6 +193,19 @@ async function loginDemo() {
 const ADMIN_ACCESS_CODE = '705035';
 function openAdminLogin() { document.getElementById('adminLoginOverlay').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function setAdminTab(tab) {
+  document.getElementById('adminTabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('adminTabCreate').classList.toggle('active', tab === 'create');
+  document.getElementById('adminLoginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('adminCreateForm').style.display = tab === 'create' ? 'block' : 'none';
+  clearAdminCreateErrors();
+}
+function clearAdminCreateErrors() {
+  document.querySelectorAll('#adminCreateForm .field').forEach((f) => f.classList.remove('invalid'));
+}
+function setAdminCreateBusy(busy) {
+  document.getElementById('adminCreateBtn').disabled = busy;
+}
 async function handleAdminLogin(ev) {
   ev.preventDefault();
   const email = document.getElementById('adminUser').value.trim();
@@ -184,6 +227,40 @@ async function handleAdminLogin(ev) {
     location.href = 'admin.html';
   } catch (err) {
     bnShowToast('Admin login failed', err.message, true);
+  }
+  return false;
+}
+async function handleAdminCreate(ev) {
+  ev.preventDefault();
+  clearAdminCreateErrors();
+  const name = document.getElementById('adminCreateName').value.trim();
+  const email = document.getElementById('adminCreateEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('adminCreatePass').value;
+  const code = document.getElementById('adminCreateCode').value.trim();
+  let valid = true;
+  if (!name) { document.getElementById('adminCreateNameField').classList.add('invalid'); valid = false; }
+  if (!isValidEmail(email)) { document.getElementById('adminCreateEmailField').classList.add('invalid'); valid = false; }
+  if (!pass || pass.length < 6) { document.getElementById('adminCreatePassField').classList.add('invalid'); valid = false; }
+  if (!code) { document.getElementById('adminCreateCodeField').classList.add('invalid'); valid = false; }
+  if (!valid) return false;
+
+  if (code !== ADMIN_ACCESS_CODE) {
+    document.getElementById('adminCreateCodeField').classList.add('invalid');
+    bnShowToast('Invalid access code', 'The access code you entered is incorrect.', true);
+    return false;
+  }
+
+  setAdminCreateBusy(true);
+  try {
+    const cred = await BN.auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name });
+    await BN.userRef(cred.user.uid).set(BN.defaultUserRecord(name, email));
+    await BN.db.ref(`admins/${cred.user.uid}`).set(true);
+    location.href = 'admin.html';
+  } catch (err) {
+    bnShowToast('Could not create admin account', err.message || 'Please check your details and try again.', true);
+  } finally {
+    setAdminCreateBusy(false);
   }
   return false;
 }
