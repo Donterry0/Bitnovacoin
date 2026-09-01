@@ -1,10 +1,9 @@
-# Bitnovacoin — BitNova Demo Crypto Broker Dashboard
+# Bitnovacoin — BitNova Crypto Broker Dashboard
 
-BitNova is a multi-page demo cryptocurrency broker/trading dashboard backed
-by **Firebase** (Authentication + Realtime Database). It has no real
-backend business logic, market-data feed, or payment processor — every
-balance, trade, deposit and withdrawal is a **simulated** value stored in
-your Firebase project so it can persist and sync across devices/browsers.
+BitNova is a multi-page cryptocurrency broker/trading dashboard backed
+by **Firebase** (Authentication + Realtime Database). Every balance, trade,
+deposit and withdrawal is stored as a value in your Firebase project so it
+can persist and sync across devices/browsers.
 
 ## Project structure
 
@@ -12,14 +11,14 @@ your Firebase project so it can persist and sync across devices/browsers.
 index.html          Landing / login / sign-up page
 dashboard.html       Balances, P/L, market snapshot, recent transactions
 markets.html         Coin list with Buy/Sell shortcuts
-trade.html           Demo trading panel with canvas price chart
+trade.html           Trading panel with canvas price chart
 portfolio.html       Holdings, allocation, P/L
 transactions.html    Full transaction history with filters
-deposit.html         Demo deposit form
-withdraw.html        Demo withdrawal form
-profile.html         Editable demo profile
+deposit.html         Deposit form
+withdraw.html        Withdrawal form
+profile.html         Editable profile
 settings.html        Theme, currency, notifications, security, logout
-admin.html           Demo Admin Panel (requires an admin-provisioned account)
+admin.html           Admin Panel (requires an admin-provisioned account)
 assets/
   styles.css         Shared design system (CSS variables, cards, nav, etc.)
   firebase-config.js Your Firebase Web SDK config
@@ -40,7 +39,7 @@ This repo is already wired to a Firebase project's config in
 
 1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
 2. **Authentication** → Sign-in method → enable **Email/Password** and
-   **Anonymous** (used for the "Continue with Demo Account" button).
+   **Anonymous** (used for the "Continue with Quick Access Account" button).
 3. **Realtime Database** → Create database → start in locked mode.
 4. Deploy the included security rules so each signed-in user can only read
    and write their own data:
@@ -59,7 +58,7 @@ This repo is already wired to a Firebase project's config in
 > project to Google's servers; actual data access is controlled entirely
 > by the security rules in `database.rules.json`, not by hiding this key.
 
-### Granting Demo Admin access
+### Granting Admin access
 
 There is no self-service way to become an admin (a real admin role must be
 provisioned by the project owner, not granted by the client app). To grant
@@ -69,8 +68,8 @@ a signed-up account access to `admin.html`:
 2. Find the account's `uid` (Authentication tab lists each user's UID).
 3. Add a node: `admins/{uid}` = `true`.
 
-That account can then use "Admin / Demo login" on the login page to reach
-the Demo Admin Panel.
+That account can then use "Admin login" on the login page to reach
+the Admin Panel.
 
 ## Running it locally
 
@@ -85,39 +84,36 @@ python3 -m http.server 8080
 ## Features
 
 - **Login / Sign up** — Firebase Authentication (email/password), plus a
-  one-click **anonymous demo account** (starting demo balance: $25,480.00).
+  one-click **anonymous quick access account** (starting balance: $25,480.00).
 - **Dashboard** — total balance, available balance, today's P/L, deposits,
   withdrawals, portfolio value and recent transactions, updated in real
   time from the Realtime Database.
-- **Markets** — BTC, ETH, SOL, BNB, XRP, ADA, DOGE and USDT with demo
+- **Markets** — BTC, ETH, SOL, BNB, XRP, ADA, DOGE and USDT with live-style
   prices, 24h change, and Buy/Sell actions.
-- **Trade** — a demo trading panel with an interactive canvas price chart
-  (1H/1D/1W/1M/1Y timeframes) and simulated order execution that updates
-  your Firebase-backed balance, holdings and transaction history.
-- **Deposit / Withdraw** — demo-only forms with validation, generated
-  transaction references/IDs, and clear "no real funds are transferred"
-  notices.
+- **Trade** — a trading panel with an interactive canvas price chart
+  (1H/1D/1W/1M/1Y timeframes) and order execution that updates your
+  Firebase-backed balance, holdings and transaction history.
+- **Deposit / Withdraw** — forms with validation and generated
+  transaction references/IDs.
 - **Transaction history** — filterable by type and status.
 - **Portfolio** — holdings, quantities, current value, P/L and an
   allocation breakdown.
-- **Profile & Settings** — editable demo profile, dark/light theme,
+- **Profile & Settings** — editable profile, dark/light theme,
   currency preference, notification and security toggles, all persisted
   per-account in the Realtime Database.
 - **Notifications** — generated automatically for deposits, withdrawals,
   trades and security events.
-- **Demo Admin Panel** — a separate admin login (gated by the
-  `admins/{uid}` node above) for viewing all demo users and transactions,
-  adjusting demo balances, and changing demo transaction statuses. No real
-  financial administration is performed.
+- **Admin Panel** — a separate admin login (gated by the
+  `admins/{uid}` node above) for viewing all users and transactions,
+  adjusting balances, and changing transaction statuses.
 - **Responsive layout** — sidebar navigation on desktop, bottom navigation
   bar on mobile.
 
 ## Important
 
-This project is a **demo frontend** only. It does not contain real
-passwords, API keys, private keys, seed phrases or payment credentials
-beyond the public Firebase Web config, and it never performs real
-transfers of funds or cryptocurrency. Before any real money or sensitive
-user data could be handled, a legitimate compliance-reviewed backend,
-KYC/AML process, market-data API, and payment/withdrawal infrastructure
-would need to be connected.
+This project is a frontend only. It does not contain real passwords, API
+keys, private keys, seed phrases or payment credentials beyond the public
+Firebase Web config. Before any real money or sensitive user data could be
+handled, a legitimate compliance-reviewed backend, KYC/AML process,
+market-data API, and payment/withdrawal infrastructure would need to be
+connected.

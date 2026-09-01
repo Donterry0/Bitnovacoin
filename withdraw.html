@@ -29,7 +29,6 @@
       <section class="view active">
         <div class="card" style="max-width:460px;">
           <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Withdraw Funds</h3>
-          <div class="notice">Demo withdrawal — no real funds are transferred.</div>
           <form onsubmit="return submitWithdrawal(event)">
             <div class="field">
               <label>Amount <span class="help-text" id="wAvailHint"></span></label>
@@ -46,10 +45,10 @@
             </div>
             <div class="field">
               <label>Destination / account</label>
-              <input type="text" id="wdDestination" placeholder="Account number or wallet address (demo)">
+              <input type="text" id="wdDestination" placeholder="Account number or wallet address">
               <small class="err">Destination is required.</small>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Submit Demo Withdrawal</button>
+            <button type="submit" class="btn btn-primary btn-block">Submit Withdrawal</button>
           </form>
         </div>
       </section>
@@ -92,7 +91,7 @@ async function submitWithdrawal(ev) {
   const destination = document.getElementById('wdDestination').value.trim();
   let valid = true;
   if (!amount || amount <= 0) { amtField.classList.add('invalid'); document.getElementById('wdAmountErr').textContent = 'Enter an amount greater than 0.'; valid = false; }
-  else if (amount > bnData.balance.cash) { amtField.classList.add('invalid'); document.getElementById('wdAmountErr').textContent = 'Amount exceeds your available demo balance.'; valid = false; }
+  else if (amount > bnData.balance.cash) { amtField.classList.add('invalid'); document.getElementById('wdAmountErr').textContent = 'Amount exceeds your available balance.'; valid = false; }
   if (!destination) { destField.classList.add('invalid'); valid = false; }
   if (!valid) return false;
 
@@ -104,7 +103,7 @@ async function submitWithdrawal(ev) {
   await BN.db.ref().update(updates);
   document.getElementById('wdAmount').value = '';
   document.getElementById('wdDestination').value = '';
-  bnPushNotification(bnUid, 'Withdrawal submitted', `Demo withdrawal of ${bnFmtUSD(amount)} (ID: ${txId}) is pending.`, bnData.settings.notifications);
+  bnPushNotification(bnUid, 'Withdrawal submitted', `Withdrawal of ${bnFmtUSD(amount)} (ID: ${txId}) is pending.`, bnData.settings.notifications);
   bnShowToast('Withdrawal submitted', `Confirmation ID ${txId} — status: Pending.`);
   return false;
 }

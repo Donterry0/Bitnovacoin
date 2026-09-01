@@ -27,7 +27,6 @@
     </div>
     <div class="content">
       <section class="view active">
-        <div class="demo-banner">🧪 <div><strong>Demo Trading:</strong> Orders are simulated — no real crypto is bought or sold.</div></div>
         <div class="trade-layout">
           <div class="card">
             <div class="coin-select-row">
@@ -38,7 +37,7 @@
             <canvas id="priceChart" width="600" height="260"></canvas>
           </div>
           <div class="card">
-            <h3 style="margin-bottom:10px;">Place Demo Order</h3>
+            <h3 style="margin-bottom:10px;">Place Order</h3>
             <div class="segmented">
               <button type="button" class="active buy" id="segBuy" onclick="setOrderSide('buy')">Buy</button>
               <button type="button" class="sell" id="segSell" onclick="setOrderSide('sell')">Sell</button>
@@ -52,10 +51,10 @@
               <div class="order-summary">
                 <div><span>Coin price</span><span id="os-price">$0.00</span></div>
                 <div><span>Est. quantity</span><span id="os-qty">0</span></div>
-                <div><span>Fee (demo, 0.1%)</span><span id="os-fee">$0.00</span></div>
+                <div><span>Fee (0.1%)</span><span id="os-fee">$0.00</span></div>
                 <div class="total"><span>Total</span><span id="os-total">$0.00</span></div>
               </div>
-              <button type="submit" class="btn btn-buy btn-block" id="orderSubmitBtn">Buy (Demo)</button>
+              <button type="submit" class="btn btn-buy btn-block" id="orderSubmitBtn">Buy</button>
             </form>
           </div>
         </div>
@@ -125,7 +124,7 @@ function setOrderSide(side) {
   document.getElementById('segBuy').classList.toggle('active', side === 'buy');
   document.getElementById('segSell').classList.toggle('active', side === 'sell');
   const btn = document.getElementById('orderSubmitBtn');
-  btn.textContent = (side === 'buy' ? 'Buy' : 'Sell') + ' (Demo)';
+  btn.textContent = (side === 'buy' ? 'Buy' : 'Sell');
   btn.className = 'btn btn-block ' + (side === 'buy' ? 'btn-buy' : 'btn-sell');
   updateOrderSummary();
 }
@@ -157,7 +156,7 @@ async function submitOrder(ev) {
     const totalCost = amount + fee;
     if (totalCost > bnData.balance.cash) {
       fieldWrap.classList.add('invalid');
-      fieldWrap.querySelector('small.err').textContent = 'Insufficient demo balance for this order.';
+      fieldWrap.querySelector('small.err').textContent = 'Insufficient balance for this order.';
       return false;
     }
     const h = holdings[coin.id] || { qty: 0, costBasis: 0 };
@@ -168,7 +167,7 @@ async function submitOrder(ev) {
     const txId = BN.genId('TRX');
     updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Buy', asset: coin.id, amount, status: 'Completed' };
     await BN.db.ref().update(updates);
-    bnPushNotification(bnUid, 'Trade executed', `Bought ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)} (demo).`, bnData.settings.notifications);
+    bnPushNotification(bnUid, 'Trade executed', `Bought ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)}.`, bnData.settings.notifications);
     bnShowToast('Order filled', `Bought ${bnFmtQty(qty)} ${coin.id}.`);
   } else {
     const h = holdings[coin.id] || { qty: 0, costBasis: 0 };
@@ -188,7 +187,7 @@ async function submitOrder(ev) {
     const txId = BN.genId('TRX');
     updates[`users/${bnUid}/transactions/${txId}`] = { txId, date: Date.now(), type: 'Sell', asset: coin.id, amount, status: 'Completed' };
     await BN.db.ref().update(updates);
-    bnPushNotification(bnUid, 'Trade executed', `Sold ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)} (demo).`, bnData.settings.notifications);
+    bnPushNotification(bnUid, 'Trade executed', `Sold ${bnFmtQty(qty)} ${coin.id} for ${bnFmtUSD(amount)}.`, bnData.settings.notifications);
     bnShowToast('Order filled', `Sold ${bnFmtQty(qty)} ${coin.id}.`);
   }
   amountInput.value = '';

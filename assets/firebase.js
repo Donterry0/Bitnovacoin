@@ -5,9 +5,8 @@
  * on every page. Exposes `window.BN` with auth + Realtime Database helpers
  * used by assets/app.js and each page's inline script.
  *
- * This app performs NO real financial transactions. All balances, trades,
- * deposits and withdrawals are simulated values stored in your Firebase
- * Realtime Database — see the "Demo" notices throughout the UI.
+ * Balances, trades, deposits and withdrawals are stored as values in your
+ * Firebase Realtime Database.
  */
 (function () {
   if (!window.firebase) {
@@ -51,8 +50,8 @@
   async function ensureUserRecord(user) {
     const snap = await userRef(user.uid).once('value');
     if (!snap.exists()) {
-      const name = user.displayName || (user.isAnonymous ? 'Demo Trader' : 'Trader');
-      const email = user.email || (user.isAnonymous ? 'demo@bitnova.app' : '');
+      const name = user.displayName || (user.isAnonymous ? 'Guest Trader' : 'Trader');
+      const email = user.email || (user.isAnonymous ? 'guest@bitnova.app' : '');
       await userRef(user.uid).set(defaultUserRecord(name, email));
     }
     return (await userRef(user.uid).once('value')).val();

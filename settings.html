@@ -37,15 +37,15 @@
             <select id="currencyPref" onchange="saveSettingsField('currency', this.value)"><option>USD</option><option>EUR</option><option>GBP</option></select>
           </div>
           <div class="setting-row">
-            <div><div class="label">Notification Preferences</div><div class="desc">Receive in-app notifications for demo activity</div></div>
+            <div><div class="label">Notification Preferences</div><div class="desc">Receive in-app notifications for account activity</div></div>
             <label class="switch"><input type="checkbox" id="notifToggle" onchange="saveSettingsField('notifications', this.checked)"><span class="slider-toggle"></span></label>
           </div>
           <div class="setting-row">
-            <div><div class="label">Two-Factor Security (Demo)</div><div class="desc">Simulated extra login verification</div></div>
+            <div><div class="label">Two-Factor Security</div><div class="desc">Extra login verification</div></div>
             <label class="switch"><input type="checkbox" id="twoFAToggle" onchange="saveSettingsField('twoFA', this.checked)"><span class="slider-toggle"></span></label>
           </div>
           <div class="setting-row">
-            <div><div class="label">Log Out</div><div class="desc">End your current demo session</div></div>
+            <div><div class="label">Log Out</div><div class="desc">End your current session</div></div>
             <button class="btn btn-danger btn-sm" onclick="bnLogout()">Log Out</button>
           </div>
         </div>

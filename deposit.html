@@ -29,7 +29,6 @@
       <section class="view active">
         <div class="card" style="max-width:460px;">
           <h3 style="font-size:16px;color:var(--text);margin-bottom:14px;">Deposit Funds</h3>
-          <div class="notice">Demo transaction — no real funds are transferred.</div>
           <form onsubmit="return submitDeposit(event)">
             <div class="field">
               <label>Amount</label>
@@ -44,7 +43,7 @@
               <label>Payment method</label>
               <select id="depMethod"><option>Bank Transfer</option><option>Card</option><option>Crypto</option></select>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Submit Demo Deposit</button>
+            <button type="submit" class="btn btn-primary btn-block">Submit Deposit</button>
           </form>
         </div>
       </section>
@@ -90,8 +89,8 @@ async function submitDeposit(ev) {
   updates[`users/${bnUid}/transactions/${ref}`] = { txId: ref, date: Date.now(), type: 'Deposit', asset: currency, amount, status: 'Completed', method };
   await BN.db.ref().update(updates);
   document.getElementById('depAmount').value = '';
-  bnPushNotification(bnUid, 'Deposit received', `Demo deposit of ${bnFmtUSD(amount)} via ${method} (Ref: ${ref}).`, bnData.settings.notifications);
-  bnShowToast('Deposit successful', `Reference ${ref} — ${bnFmtUSD(amount)} added to your demo balance.`);
+  bnPushNotification(bnUid, 'Deposit received', `Deposit of ${bnFmtUSD(amount)} via ${method} (Ref: ${ref}).`, bnData.settings.notifications);
+  bnShowToast('Deposit successful', `Reference ${ref} — ${bnFmtUSD(amount)} added to your balance.`);
   return false;
 }
 </script>

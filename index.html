@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>BitNova — Demo Crypto Broker Dashboard</title>
-<meta name="description" content="BitNova is a demo cryptocurrency broker dashboard. All balances, trades, deposits and withdrawals are simulated — no real funds are ever transferred.">
+<title>BitNova — Crypto Broker Dashboard</title>
+<meta name="description" content="BitNova is a cryptocurrency broker dashboard for tracking balances, trades, deposits and withdrawals.">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
 <div id="loginScreen">
   <div class="auth-card">
     <div class="brand"><div class="logo">BN</div><span>Bit<span class="name-b">Nova</span></span></div>
-    <div class="auth-sub">Demo crypto broker dashboard — simulated funds only</div>
+    <div class="auth-sub">Crypto broker dashboard</div>
 
     <div class="auth-tabs">
       <button id="tabLogin" class="active" onclick="setAuthTab('login')">Log In</button>
@@ -43,18 +43,18 @@
     </form>
 
     <div class="divider">or</div>
-    <button class="btn btn-ghost btn-block" onclick="loginDemo()">⚡ Continue with Demo Account</button>
+    <button class="btn btn-ghost btn-block" onclick="loginDemo()">⚡ Continue with Quick Access Account</button>
 
-    <div class="admin-link">Are you an administrator? <a onclick="openAdminLogin()">Admin / Demo login</a></div>
+    <div class="admin-link">Are you an administrator? <a onclick="openAdminLogin()">Admin login</a></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="adminLoginOverlay">
   <div class="modal">
-    <div class="modal-head"><h2>Admin Demo Login</h2><button onclick="closeModal('adminLoginOverlay')">✕</button></div>
+    <div class="modal-head"><h2>Admin Login</h2><button onclick="closeModal('adminLoginOverlay')">✕</button></div>
     <p class="help-text">Admin access is granted only to accounts that a project owner has manually added to the
       <code>admins</code> node in the Firebase Realtime Database. This grants access to the
-      <strong>Demo Admin Panel</strong> only — no real financial administration is performed.</p>
+      <strong>Admin Panel</strong>.</p>
     <form onsubmit="return handleAdminLogin(event)">
       <div class="field">
         <label>Admin email</label>
@@ -151,7 +151,7 @@ async function loginDemo() {
     await BN.ensureUserRecord(cred.user);
     location.href = 'dashboard.html';
   } catch (err) {
-    bnShowToast('Demo login failed', err.message, true);
+    bnShowToast('Login failed', err.message, true);
   } finally {
     setBtnBusy(false);
   }
